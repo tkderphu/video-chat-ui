@@ -1,6 +1,6 @@
 import {UserModelView} from "../../auth/domain/user.model.view";
 
-export interface MessageModeViews {
+export interface MessageModeView {
   id: number
   createdDate: string
   fromUser: UserModelView

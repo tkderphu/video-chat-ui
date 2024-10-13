@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import {Utils} from "../../common/utils";
 
 @Component({
   selector: 'app-chat-frame',
@@ -7,4 +8,5 @@ import { Component } from '@angular/core';
 })
 export class ChatFrameComponent {
 
+    protected readonly Utils = Utils;
 }

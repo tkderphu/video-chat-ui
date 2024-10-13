@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import {Component, Input} from '@angular/core';
+import {ConversationService} from "../../service/conversation.service";
+import {ConversationRequest} from "../../domain/conversation.request";
 
 @Component({
   selector: 'app-form-conversation',
@@ -6,5 +8,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./form-conversation.component.css']
 })
 export class FormConversationComponent {
+
+    @Input()
+    conversationService?: ConversationService;
+    conversationRequest: ConversationRequest = new ConversationRequest();
+
 
 }
