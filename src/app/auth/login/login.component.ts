@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {LoginRequest} from "../domain/login.request";
-import {AuthService} from "../service/auth.service";
+import {UserService} from "../service/user.service";
 
 @Component({
   selector: 'app-login',
@@ -11,7 +11,7 @@ export class LoginComponent {
 
   loginRequest: LoginRequest = new LoginRequest()
   messageNotification ?: string = ''
-  constructor(private authService: AuthService) {
+  constructor(private authService: UserService) {
   }
 
   loginAccount() {

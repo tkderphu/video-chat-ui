@@ -1,18 +1,54 @@
 <div class="container">
   <main class="content">
     <div class="container p-0">
-      <h1 class="h3 mb-3">Welcome {{Utils.getPayload()?.fullName}}</h1>
+      <h1 class="h3 mb-3">Welcome {{ Utils.getPayload()?.fullName }}</h1>
       <div class="mb-3 d-flex">
-        <div *ngFor="let user of users" style="margin-right: 20px; cursor: pointer" (click)="chatSpecificUser(user)">
-          <img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-1" width="40"
+        <div *ngFor="let user of users" style="margin-right: 20px; cursor: pointer"
+             (click)="chatSpecificUser(user)">
+          <img src="{{user.avatar ? user.avatar : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
+               class="rounded-circle mr-1" width="40"
                height="40">
-          <p>{{user.fullName}}</p>
+          <p>{{ user.fullName }}</p>
         </div>
       </div>
-      <div class="card" >
+      <div class="card">
         <div class="row g-0">
-          <app-list-conversation></app-list-conversation>
-          <div *ngIf="messageConversation !== undefined" class="col-12 col-lg-6 col-xl-9">
+
+          <div class="col-12 col-lg-6 col-xl-3 border-right">
+            <div class="px-4 d-none d-md-block">
+              <app-form-conversation
+                [conversationService]="conversationService"
+                (emitter)="addConversation($event)"
+              >
+              </app-form-conversation>
+            </div>
+            <a *ngFor="let conversation of listConversationOfUser"
+               href="javascript:void(0)"
+               (click)="getAllMessageOfConversation(conversation)"
+               class="list-group-item list-group-item-action border-0">
+              <div class="badge bg-success float-right">5</div>
+              <div class="d-flex align-items-start">
+                <img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-1"
+                     alt="Vanessa Tucker" width="40" height="40">
+                <div class="flex-grow-1 ml-3">
+                  {{ conversation.displayName }}
+                  <div class="small"><span class="fas fa-circle chat-online"></span>
+                    <p class="text-truncate">
+                      <b>{{
+                          conversation.recentMessage?.fromUser?.id !== Utils.getPayload()?.id ?
+                            conversation.recentMessage?.fromUser?.fullName : 'You'
+                        }}</b>:
+                      {{ conversation.recentMessage?.content }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </a>
+            <hr class="d-block d-lg-none mt-1 mb-0">
+          </div>
+
+
+          <div class="col-12 col-lg-6 col-xl-9">
             <div class="py-2 px-4 border-bottom d-none d-lg-block">
               <div class="d-flex align-items-center py-1">
                 <div class="position-relative">
@@ -20,8 +56,7 @@
                        alt="Sharon Lessman" width="40" height="40">
                 </div>
                 <div class="flex-grow-1 pl-3">
-                  <strong>{{messageConversation.destination?.isUser === false ? messageConversation.destination?.conversationInfo?.name :
-                    messageConversation.fromUser?.id !== Utils.getPayload()?.id ? messageConversation.fromUser?.fullName : messageConversation.destination?.conversationInfo?.name}}</strong>
+                  <strong>{{ currentConversation?.displayName }}</strong>
                   <div class="text-muted small"><em>Typing...</em></div>
                 </div>
                 <div>
@@ -35,7 +70,7 @@
                     </svg>
                   </button>
 
-                  <button (click)="navigateVideo()" class="btn btn-info btn-lg mr-1 px-3 d-none d-md-inline-block"
+                  <button (click)="sendMessage(true)" class="btn btn-info btn-lg mr-1 px-3 d-none d-md-inline-block"
                           data-toggle="modal" data-target="#exampleModal">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -59,41 +94,50 @@
               </div>
             </div>
             <div class="position-relative">
-              <div class="chat-messages p-4" #scrollMe [scrollTop]="scrollMe.scrollHeight" id = "history-message"style="height: 500px;">
-                <div *ngFor="let message of messageDetails" class="chat-message-{{message.fromUser?.id !== Utils.getPayload()?.id ? 'left' : 'right'}} pb-4">
+              <div class="chat-messages p-4" #scrollMe [scrollTop]="scrollMe.scrollHeight" id="history-message"
+                   style="height: 500px;">
+                <div *ngFor="let message of messages"
+                     class="chat-message-{{message.fromUser?.id !== Utils.getPayload()?.id ? 'left' : 'right'}} pb-4">
                   <div>
-                    <img src="https://bootdey.com/img/Content/avatar/avatar3.png" width="40" height="40" class="rounded-circle mr-1">
+                    <img src="https://bootdey.com/img/Content/avatar/avatar3.png" width="40" height="40"
+                         class="rounded-circle mr-1">
                     <div class="text-muted small text-nowrap mt-2">
-                      {{message.createdDate}}
+                      {{ message.createdDate }}
                     </div>
                   </div>
                   <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
-                    <div class="font-weight-bold mb-1" >
-                      {{message.fromUser?.id !== Utils.getPayload()?.id ? message.fromUser?.fullName : 'You'}}
+                    <div class="font-weight-bold mb-1">
+                      {{ message.fromUser?.id !== Utils.getPayload()?.id ? message.fromUser?.fullName : 'You' }}
                     </div>
-                    <p *ngIf="message.videoCall" style="color: red;">
-                      {{message.content}}
+                    <p *ngIf="message.video" style="color: red;">
+                      {{ message.content }}
                     </p>
-                    <div *ngIf="!message.videoCall">
+                    <div *ngIf="!message.video">
                       <div class="d-flex flex-wrap">
-                        <img style="margin-left: 10px" *ngFor="let image of message.imageUrls" class="rounded d-block" width="150px" height="150px" [src]="image">
+                        <img style="margin-left: 10px"
+                             *ngFor="let image of message.detachImages"
+                             class="rounded d-block" width="150px" height="150px"
+                             [src]="image">
                       </div>
-                      {{message.content}}
+                      {{ message.content }}
                     </div>
-                    <div *ngIf="message.videoCall">
-                      <button *ngIf="!message.videoClosed" class="btn btn-primary w-50" (click)="joinVideoCall(message)">Join</button>
-                      <p class="text-center">{{message.videoClosed ? 'Video call was closed' : ''}}</p>
+                    <div *ngIf="message.video">
+                      <button
+                        class="btn btn-primary w-50"
+                        (click)="joinVideoCall(message)">Join
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
             <div class="flex-grow-0 py-3 px-4 border-top">
               <div class="input-group">
-                <input type="text" class="form-control" name="message" [(ngModel)]="messageRequest"
+                <input type="text" class="form-control" name="message" [(ngModel)]="messageContent"
                        placeholder="Type your message">
                 <form enctype="multipart/form-data">
-                  <input type="file" multiple class="form-control" name="file" id="file" [(ngModel)]="fileList">
+                  <input type="file" multiple class="form-control" name="file" id="file">
                 </form>
                 <button class="btn btn-primary" (click)="sendMessage()">Send</button>
               </div>

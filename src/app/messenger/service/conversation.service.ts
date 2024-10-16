@@ -1,15 +1,16 @@
 import {HttpClient} from "@angular/common/http";
 import {ConversationRequest} from "../domain/conversation.request";
 import {ApiResponse} from "../../common/api.response";
-import {environment} from "../../../environments/environment";
 import {Injectable} from "@angular/core";
 import {ApiListResponse} from "../../common/api.list.response";
+import {environment} from "../../../environments/environment.development";
+
 @Injectable({
   providedIn: "root"
 })
 export class ConversationService {
 
-  private URL: string = `${environment.REST_API}/messenger/conversations`
+  private URL: string = environment.REST_API + "/messenger/conversations"
 
   constructor(private client: HttpClient) {
   }
@@ -23,6 +24,12 @@ export class ConversationService {
 
   getAllConversationOfCurrentUser() {
     return this.client.get<ApiListResponse<any>>(
+      this.URL
+    )
+  }
+
+  checkWhetherConversationIsValidAndHaveContainCurrentUser() {
+    return this.client.get<ApiResponse<any>>(
       this.URL
     )
   }

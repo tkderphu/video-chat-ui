@@ -1,0 +1,10 @@
+
+<div style="background-color: black;" class="d-flex flex-wrap">
+  <app-video
+    *ngFor="let stream of Array.from(mapStream.values())"
+    [mediaStream]="stream"
+    [displayName]="'hello world'"
+  >
+  </app-video>
+
+</div>

@@ -1,21 +1,21 @@
 import {HttpClient} from "@angular/common/http";
 import {MessageRequest} from "../domain/message.request";
 import {ApiResponse} from "../../common/api.response";
-import {environment} from "../../../environments/environment";
 import {Injectable} from "@angular/core";
+import {environment} from "../../../environments/environment.development";
 
 @Injectable({
   providedIn: "root"
 })
 export class MessageService {
-  private URL: string = `${environment.REST_API}/messenger/messages`
+  private URL: string =  environment.REST_API + "/messenger/messages"
   constructor(private client: HttpClient) {
   }
 
-  createMessage(messageRequest?: MessageRequest) {
+  createMessage(formData: FormData) {
     return this.client.post<ApiResponse<any>>(
       this.URL,
-      messageRequest
+      formData
     )
   }
   getMessageGalleries() {
@@ -27,6 +27,12 @@ export class MessageService {
   getAllMessageOfConversation(conversationId?: number) {
     return this.client.get<ApiResponse<any>>(
       this.URL + '/conversations/' + conversationId
+    )
+  }
+  callVideo(payload: string) {
+    return this.client.post<ApiResponse<any>>(
+      environment.REST_API + "/messenger/signal",
+      payload
     )
   }
 }

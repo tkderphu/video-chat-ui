@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {AuthService} from "../service/auth.service";
+import {UserService} from "../service/user.service";
 import {RegisterRequest} from "../domain/register.request";
 
 @Component({
@@ -11,7 +11,7 @@ export class RegisterComponent {
 
   registerRequest: RegisterRequest = new RegisterRequest()
   messageNotification?: string = ''
-  constructor(private authService: AuthService) {
+  constructor(private authService: UserService) {
   }
 
   registerAccount() {

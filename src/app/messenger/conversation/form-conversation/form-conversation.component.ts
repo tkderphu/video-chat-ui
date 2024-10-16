@@ -1,6 +1,7 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {ConversationService} from "../../service/conversation.service";
 import {ConversationRequest} from "../../domain/conversation.request";
+import {ConversationModelView} from "../../domain/conversation.model.view";
 
 @Component({
   selector: 'app-form-conversation',
@@ -9,9 +10,19 @@ import {ConversationRequest} from "../../domain/conversation.request";
 })
 export class FormConversationComponent {
 
-    @Input()
-    conversationService?: ConversationService;
-    conversationRequest: ConversationRequest = new ConversationRequest();
+  @Input()
+  conversationService?: ConversationService;
+  @Input()
+  conversationRequest: ConversationRequest = new ConversationRequest();
+  @Output()
+  emitter: EventEmitter<ConversationModelView> = new EventEmitter<ConversationModelView>()
 
-
+  createConversation() {
+    this.conversationService?.createConversation(this.conversationRequest)
+      .subscribe({
+        next: response => {
+          if(response.status === 200) this.emitter.emit(response.data)
+        }
+      })
+  }
 }

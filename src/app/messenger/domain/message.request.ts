@@ -1,5 +1,5 @@
-export class MessageRequest {
+export interface MessageRequest {
   destId?: number
-  content: string = ''
-  video: boolean = false
+  content: string
+  video: boolean
 }
