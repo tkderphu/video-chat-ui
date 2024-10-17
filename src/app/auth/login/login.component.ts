@@ -19,6 +19,7 @@ export class LoginComponent {
       .subscribe({
         next: response => {
             if(response.status === 200) {
+              console.log(response.data)
               window.localStorage.setItem('tk', JSON.stringify(response.data))
               window.location.href = '/messenger'
             } else {

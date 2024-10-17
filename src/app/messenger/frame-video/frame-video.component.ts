@@ -1,12 +1,13 @@
-import {Component, OnInit} from '@angular/core';
-import {StompService} from "../service/stomp.service";
-import {ConversationService} from "../service/conversation.service";
-import {ActivatedRoute} from "@angular/router";
-import {SignalPayload} from "../domain/signal.payload";
-import {PeerInfo} from "../domain/peer.info";
+import { Component, OnInit } from '@angular/core';
+import { StompService } from "../service/stomp.service";
+import { ConversationService } from "../service/conversation.service";
+import { ActivatedRoute } from "@angular/router";
+import { SignalPayload } from "../domain/signal.payload";
+import { Pair, PeerInfo } from "../domain/peer.info";
 import { MessageService } from '../service/message.service';
 import * as Stomp from 'stompjs';
 import * as SockJS from 'sockjs-client';
+import { environment } from 'src/environments/environment.development';
 
 const ICE_SERVERS = {
   iceServers: [
@@ -18,9 +19,9 @@ const ICE_SERVERS = {
 
 const constraints = {
   video: {
-    width: {max: 500},
-    height: {max: 300},
-    frameRate: {max: 100},
+    width: { max: 500 },
+    height: { max: 300 },
+    frameRate: { max: 100 },
   },
   audio: true,
 };
@@ -48,13 +49,14 @@ export class FrameVideoComponent implements OnInit {
   conversationId?: string
   localId: string = ''
   localDisplay?: string
-  mapStream: Map<string, MediaStream> = new Map<string, MediaStream>();
+  localPeer?: Pair
+  mapStream: Map<string, Pair> = new Map<string, Pair>();
   localStream?: MediaStream
-  stompClient: any;
-  constructor(private stompService: StompService,
-              private conversationService: ConversationService,
-              private activatedRoute: ActivatedRoute,
-              private messageService: MessageService) {
+  stompClient: any = new StompService().getStompClient()
+  constructor(
+    private conversationService: ConversationService,
+    private activatedRoute: ActivatedRoute,
+    private messageService: MessageService) {
   }
 
   ngOnInit(): void {
@@ -80,102 +82,92 @@ export class FrameVideoComponent implements OnInit {
 
 
   private start_video_call() {
-    this.localId = createUUID()
+    if(!localStorage.getItem("peerId")) {
+      localStorage.setItem("peerId", createUUID())
+    }
+    //@ts-ignore
+    this.localId = localStorage.getItem("peerId")
     this.localDisplay = "quangphu - " + this.localId
     navigator.mediaDevices.getUserMedia(constraints)
       .then((stream) => {
-        this.mapStream.set(this.localId, stream)
+        this.localPeer = {
+          displayName: this.localDisplay,
+          mediaStream: stream,
+          yourself: true
+        }
+        this.mapStream.set(this.localId, this.localPeer)
       })
-      .catch(errorHandler)
+      .catch(() => {
+        alert("Your devices was being used")
+        window.location.href='/messenger'
+      })
       .then(() => {
-        var socket = new SockJS(`http://localhost:8080/ws`);
-          this.stompClient = Stomp.over(socket);
-         this.stompClient.connect({}, () => {
-            this.stompClient.subscribe(
-              "/topic/room",
-              // "/topic/video-call/conversation/" + this.conversationId,
-              (payload: any) => {
-                console.log(payload)
-                const signalPayload: SignalPayload = JSON.parse(payload.body)
-    
-                if (signalPayload.localUuid === this.localId
-                  || (signalPayload.dest !== this.localId
-                    && signalPayload.dest != this.conversationId)) {
-                  return;
-                }
-    
-                if (signalPayload.dest === this.conversationId) {
-                  //@ts-ignore
-                  this.setUpPeer(signalPayload.localUuid, signalPayload.displayName);
-                  this.stompService.send(
-                    "/app/signal",
-                    // "/app/video-call/conversation/" + this.conversationId,
-                    new SignalPayload(
-                      this.localId,
-                      this.localDisplay,
-                      signalPayload.localUuid
-                    )
-                  )
-                } else if (signalPayload.dest === this.localId) {
-                  //@ts-ignore
-                  this.setUpPeer(signalPayload.localUuid, signalPayload.displayName, true);
-                } else if (signalPayload.sdp) {
-                  this.peerConnections[signalPayload.localUuid].pc
-                    .setRemoteDescription(signalPayload.sdp)
-                    .then(() => {
-                      if (signalPayload.sdp.type === 'offer') {
-                        this.peerConnections[signalPayload.localUuid].pc
-                          .createAnswer()
-                          .then((description) => {
-                            this.createdDescription(
-                              description,
-                              signalPayload.localUuid
-                            )
-                          })
-                          .catch(errorHandler)
-                      }
-                    })
-                } else if (signalPayload.ice) {
-                  this.peerConnections[signalPayload.localUuid].pc.addIceCandidate(
-                    new RTCIceCandidate(signalPayload.ice)
-                  )
-                    .catch(errorHandler)
-                }
-              }
-            )
+        this.stompClient.subscribe(
+          "/topic/room",
+          (payload: any) => {
+            console.log(payload)
+            const signalPayload: SignalPayload = JSON.parse(payload.body)
+            const peerId = signalPayload.localUuid
+            if (peerId === this.localId
+              || (signalPayload.dest !== this.localId
+                && signalPayload.dest != this.conversationId)) {
+              console.log("break")
+              return;
+            }
+
+            if (signalPayload.displayName && signalPayload.dest === this.conversationId) {
+              //@ts-ignore
+              this.setUpPeer(signalPayload.localUuid, signalPayload.displayName);
               this.stompClient.send(
                 "/app/signal",
+                // "/app/video-call/conversation/" + this.conversationId,
                 {},
                 JSON.stringify(new SignalPayload(
                   this.localId,
                   this.localDisplay,
-                  this.conversationId,
-                  undefined,undefined
+                  signalPayload.localUuid,
+                  undefined,
+                  undefined
                 ))
               )
-         })
-        // this.stompService.send(
-        //   "/app/signal",
-        //   // "/app/video-call/conversation/" + this.conversationId,
-        //   new SignalPayload(
-        //     this.localId,
-        //     this.localDisplay,
-        //     this.conversationId,
-        //     undefined,undefined
-        //   )
-        // )
-        // this.messageService.callVideo(JSON.stringify(
-        //   new SignalPayload(
-        //     this.localId,
-        //     this.localDisplay,
-        //     this.conversationId,
-        //     undefined,undefined
-        //   )
-        // )).subscribe({
-        //   next: () => {
-        //     console.log("send message")
-        //   }
-        // })
+            } else if (signalPayload.displayName && signalPayload.dest === this.localId) {
+              //@ts-ignore
+              this.setUpPeer(signalPayload.localUuid, signalPayload.displayName, true);
+            } else if (signalPayload.sdp) {
+              this.peerConnections[signalPayload.localUuid].pc
+                .setRemoteDescription(new RTCSessionDescription(signalPayload.sdp))
+                .then(() => {
+                  if (signalPayload.sdp.type === 'offer') {
+                    this.peerConnections[signalPayload.localUuid].pc
+                      .createAnswer()
+                      .then((description: any) => {
+                        this.createdDescription(
+                          description,
+                          signalPayload.localUuid
+                        )
+                      })
+                      .catch(errorHandler)
+                  }
+                })
+            } else if (signalPayload.ice) {
+              this.peerConnections[signalPayload.localUuid].pc.addIceCandidate(
+                new RTCIceCandidate(signalPayload.ice)
+              )
+                .catch(errorHandler)
+            }
+          }
+        )
+        this.stompClient.send(
+          "/app/signal",
+          {},
+          JSON.stringify(new SignalPayload(
+            this.localId,
+            this.localDisplay,
+            this.conversationId,
+            undefined,
+            undefined
+          ))
+        )
       })
       .catch(errorHandler)
   }
@@ -188,12 +180,21 @@ export class FrameVideoComponent implements OnInit {
     }
 
     this.peerConnections[peerId].pc.ontrack = (event) => {
-      this.mapStream.set(peerId, event.streams[0])
+
+      this.mapStream.set(peerId, {
+        displayName: displayName,
+        mediaStream: event.streams[0],
+        yourself: false
+      })
+      console.log("-------------------stream: ", event.streams[0], "-------------------------")
     }
 
-    this.localStream?.getVideoTracks().forEach(track => {
-      this.peerConnections[peerId].pc.addTrack(track)
+    this.mapStream.get(this.localId)?.mediaStream?.getTracks().forEach(track => {
+      console.log("push stream-----------------", this.mapStream.get(this.localId)?.mediaStream, '-----------')
+      //@ts-ignore
+      this.peerConnections[peerId].pc.addTrack(track, this.mapStream.get(this.localId)?.mediaStream)
     })
+
 
     this.peerConnections[peerId].pc.onconnectionstatechange = (event) => {
       const state = this.peerConnections[peerId].pc.iceConnectionState;
@@ -205,22 +206,22 @@ export class FrameVideoComponent implements OnInit {
 
     this.peerConnections[peerId].pc.onicecandidate = (event) => {
       if (event.candidate) {
-        this.stompService.send(
+        this.stompClient.send(
           "/app/signal",
-          // "/app/video-call/room/" + this.conversationId,
-          new SignalPayload(
+          {},
+          JSON.stringify(new SignalPayload(
             this.localId,
             undefined,
             peerId,
             undefined,
             event.candidate
-          )
+          ))
         )
       }
     }
     if (initCall) {
       this.peerConnections[peerId].pc.createOffer()
-        .then((description) => {
+        .then((description: any) => {
           this.createdDescription(description, peerId)
         })
     }
@@ -229,16 +230,16 @@ export class FrameVideoComponent implements OnInit {
   private createdDescription(description: any, peerUuid: string) {
     console.log(`got description, peer ${peerUuid}`);
     this.peerConnections[peerUuid].pc.setLocalDescription(description).then(() => {
-      this.stompService.send(
+      this.stompClient.send(
         "/app/signal",
-        // "/app/video-call/conversation/" + this.conversationId,
-        new SignalPayload(
+        {},
+        JSON.stringify(new SignalPayload(
           this.localId,
           undefined,
           peerUuid,
-          this.peerConnections[peerUuid].pc.localDescription,
-          undefined
-        ))
+          description,
+          undefined,
+        )))
     }).catch(errorHandler);
   }
 

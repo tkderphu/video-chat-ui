@@ -1,9 +1,9 @@
 <div class="card ml-3 mt-3 mb-3" style="width: 30rem;">
-  <video style="height: 300px; width: 30rem" autoplay="true" [srcObject]="mediaStream">
+  <video style="height: 300px; width: 30rem" autoplay="true" [srcObject]="pair?.mediaStream">
   </video>
-  <h5 class="card-title text-center">{{displayName}}</h5>
-  <div class="d-flex flex-wrap justify-content-around">
-    <a href="javascript:(0)" (click)="changeCamera()" class="card-link">Turn On/Off Camera</a>
+  <h5 class="card-title text-center text-truncate-9">{{pair?.displayName}}</h5>
+  <div class="d-flex flex-wrap justify-content-around" *ngIf="pair?.yourself">
+    <a href="javascript:(0)"  class="card-link">Turn On/Off Camera</a>
     <a href="javascript:(0)" class="card-link">Turn On/Off Mic</a>
   </div>
 </div>

@@ -22,11 +22,11 @@ export class ChatFrameComponent implements OnInit {
   currentConversation?: ConversationModelView
   messages?: Array<MessageModeView> = new Array<MessageModeView>();
   messageContent: string = ''
+  stompService: StompService = new StompService()
 
   constructor(private userService: UserService,
               protected messageService: MessageService,
-              protected conversationService: ConversationService,
-              private stompService: StompService) {
+              protected conversationService: ConversationService) {
   }
 
   ngOnInit(): void {

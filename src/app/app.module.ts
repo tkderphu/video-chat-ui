@@ -35,9 +35,8 @@ import { VideoComponent } from './messenger/frame-video/video/video.component';
   providers: [
     UserService,
     MessageService,
-    ConversationService,
-    StompService
-  ],
+    ConversationService
+    ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
