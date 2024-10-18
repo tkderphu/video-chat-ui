@@ -4,7 +4,7 @@
       <h1 class="h3 mb-2 mt-3">Welcome {{ Utils.getPayload().fullName }}</h1>
       <div class="mb-2 d-flex">
         <div *ngFor="let user of users" style="margin-right: 20px; cursor: pointer"
-             (click)="chatSpecificUser(user)">
+             (click)="findPrivateConversation(user)">
           <img src="{{user.avatar ? user.avatar : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
                class="rounded-circle mr-1" width="40"
                height="40">
@@ -35,7 +35,7 @@
                       <b>{{
                           conversation.recentMessage?.fromUser?.id !== Utils.getPayload()?.id ?
                             conversation.recentMessage?.fromUser?.fullName : 'You'
-                        }}</b>:
+                        }}</b><span>{{conversation.recentMessage ? ': ' : ''}}</span> 
                       {{ conversation.recentMessage?.content }}
                     </p>
                   </div>

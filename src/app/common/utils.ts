@@ -1,12 +1,11 @@
 import {AuthResponse} from "../auth/domain/auth.response";
-import {UserModelView} from "../auth/domain/user.model.view";
 
 export class Utils {
 
 
   public static getPayload(): AuthResponse {
     //@ts-ignore
-    return this.tokenIsExpired() && JSON.parse(localStorage.getItem("tk"))
+    return !this.tokenIsExpired() && JSON.parse(localStorage.getItem("tk"))
   }
 
   public static tokenIsExpired() {

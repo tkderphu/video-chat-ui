@@ -5,10 +5,6 @@ import { ActivatedRoute } from "@angular/router";
 import { SignalPayload } from "../domain/signal.payload";
 import { Pair, PeerInfo } from "../domain/peer.info";
 import { MessageService } from '../service/message.service';
-import * as Stomp from 'stompjs';
-import * as SockJS from 'sockjs-client';
-import { environment } from 'src/environments/environment.development';
-
 const ICE_SERVERS = {
   iceServers: [
     {

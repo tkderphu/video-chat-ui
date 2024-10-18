@@ -5,14 +5,13 @@ import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {LoginComponent} from './auth/login/login.component';
 import {RegisterComponent} from './auth/register/register.component';
-import {HttpClientModule} from "@angular/common/http";
+import {HttpClient, HttpClientModule} from "@angular/common/http";
 import {FormsModule} from "@angular/forms";
 import {UserService} from "./auth/service/user.service";
 import {MessageService} from "./messenger/service/message.service";
 import {ChatFrameComponent} from './messenger/chat-frame/chat-frame.component';
 import {FormConversationComponent} from './messenger/conversation/form-conversation/form-conversation.component';
 import {ConversationService} from "./messenger/service/conversation.service";
-import {StompService} from "./messenger/service/stomp.service";
 import { FrameVideoComponent } from './messenger/frame-video/frame-video.component';
 import { VideoComponent } from './messenger/frame-video/video/video.component';
 
@@ -35,7 +34,8 @@ import { VideoComponent } from './messenger/frame-video/video/video.component';
   providers: [
     UserService,
     MessageService,
-    ConversationService
+    ConversationService,
+    HttpClient
     ],
   bootstrap: [AppComponent]
 })

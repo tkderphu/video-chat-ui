@@ -7,14 +7,15 @@ import {environment} from "../../../environments/environment.development";
 export class StompService {
 
   private topicQueue: Map<string, number> = new Map<string, number>
-  private stompClient = Stomp.over(new SockJS(environment.WEB_SOCKET));
-
+  private stompClient: any;
 
   constructor() {
+    this.stompClient = Stomp.over(new SockJS(environment.WEB_SOCKET));
     this.stompClient.connect({}, (frame: any) => {
       console.log("todo something: ", frame)
     })
   }
+
 
 
   send(url: string, data: any) : void {

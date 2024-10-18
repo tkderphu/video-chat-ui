@@ -1,6 +1,6 @@
 
 export  interface UserModelView {
-  id?: number
-  fullName?: string
+  id: number
+  fullName: string
   avatar?: string
 }

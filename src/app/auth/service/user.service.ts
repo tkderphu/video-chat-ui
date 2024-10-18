@@ -5,6 +5,7 @@ import {ApiResponse} from "../../common/api.response";
 import {RegisterRequest} from "../domain/register.request";
 import {ApiListResponse} from "../../common/api.list.response";
 import {environment} from "../../../environments/environment.development";
+import { Header } from "src/app/common/header";
 
 @Injectable({
   providedIn: "root"
@@ -31,8 +32,10 @@ export class UserService {
   }
 
   getAllUser() {
+    console.log("header: ", Header.header())
     return this.client.get<ApiListResponse<any>>(
-      this.URL
+      this.URL,
+      {headers: Header.header()}
     )
   }
 

@@ -22,7 +22,7 @@ export class ChatFrameComponent implements OnInit {
   currentConversation?: ConversationModelView
   messages?: Array<MessageModeView> = new Array<MessageModeView>();
   messageContent: string = ''
-  stompService: StompService = new StompService()
+  stompClient: any = new StompService().getStompClient();
 
   constructor(private userService: UserService,
               protected messageService: MessageService,
@@ -35,15 +35,19 @@ export class ChatFrameComponent implements OnInit {
         if (response.status === 200) this.users = response.data;
       }
     })
-    this.conversationService?.getAllConversationOfCurrentUser().subscribe({
+    this.conversationService.getAllConversationOfCurrentUser()
+    .subscribe({
       next: (response) => {
         if (response.status === 200) {
+        
           this.listConversationOfUser = response.data
           this.listConversationOfUser?.forEach(conversation => {
-            this.stompService?.subscribe(
+            console.log(this.stompClient)
+            this.stompClient.subscribe(
               "/topic/private/messages/conversation/" + conversation.id,
               ((payload: any) => {
-                const message: MessageModeView = JSON.parse(payload).body;
+                const message: MessageModeView = JSON.parse(payload.body);
+                console.log("receive message: ", message)
                 if (message.conversation.id === this.currentConversation?.id) {
                   this.messages?.push(message);
                 }
@@ -62,7 +66,8 @@ export class ChatFrameComponent implements OnInit {
         } else {
           alert(response.message)
         }
-      }
+      },
+      error: (err) => console.error(err)
     })
   }
 
@@ -86,7 +91,7 @@ export class ChatFrameComponent implements OnInit {
       content: this.messageContent
     }
 
-    const formData = new FormData();
+    const formData = new FormData()
     formData.set("messageRequest", JSON.stringify(request))
 
     this.messageService.createMessage(formData)
@@ -99,12 +104,14 @@ export class ChatFrameComponent implements OnInit {
               this.joinVideoCall(message)
             }
           }
-        }
+        },
+        error: (err) => console.log(err)
       })
 
   }
 
   getAllMessageOfConversation(conversation: ConversationModelView) {
+    this.currentConversation = conversation;
     this.messageService?.getAllMessageOfConversation(conversation.id)
       .subscribe({
         next: response => {
@@ -118,4 +125,38 @@ export class ChatFrameComponent implements OnInit {
   addConversation(response: ConversationModelView) {
     this.listConversationOfUser?.unshift(response)
   }
+
+
+
+  /**
+   * Find conversation between 2 users
+   */
+  findPrivateConversation(withUser: UserModelView) {
+    this.conversationService.findPrivateConversationWithUser(withUser.id)
+    .subscribe({
+      next: response => {
+        if(response.status === 200) {
+          this.currentConversation = response.data;
+          this.messageService.getAllMessageOfConversation(this.currentConversation?.id)
+          .subscribe({
+            next: response => {
+              if(response.status === 200) {
+                this.messages = response.data;
+              } else {
+                alert("Xảy ra lỗi khi lấy message của conversation")
+                alert(response.message)
+              }
+            },
+            error: (err) => console.error(err) 
+          })
+        } else {
+          alert("Xảy ra lỗi khi tìm conversation giữa 2 user")
+          alert(response.message)
+        }
+      },
+      error: (err) => console.error(err)
+    })
+  }
+
+
 }
