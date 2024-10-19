@@ -5,5 +5,6 @@ export interface ConversationModelView {
   id: number
   displayName: string
   imageRepresent: string
-  status: boolean
+  status: boolean,
+  scope: string
 }

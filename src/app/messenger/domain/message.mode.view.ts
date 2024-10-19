@@ -8,5 +8,6 @@ export interface MessageModeView{
   content: string
   detachImages: Array<string>
   video: boolean
-  conversation: ConversationModelView
+  toConversation: ConversationModelView
+  
 }

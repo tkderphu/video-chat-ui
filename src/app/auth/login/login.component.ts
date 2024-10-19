@@ -23,7 +23,7 @@ export class LoginComponent {
               window.localStorage.setItem('tk', JSON.stringify(response.data))
               window.location.href = '/messenger'
             } else {
-              this.messageNotification = response.message;
+              alert(response.message  )
             }
         },
         error: response => {

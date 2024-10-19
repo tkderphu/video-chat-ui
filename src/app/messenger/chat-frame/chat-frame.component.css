@@ -1,0 +1,97 @@
+body{margin-top:20px;}
+
+.chat-online {
+  color: #34ce57
+}
+
+.chat-offline {
+  color: #e4606d
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  max-height: 800px;
+  overflow-y: scroll
+}
+.chat-message-center,
+.chat-message-left,
+.chat-message-right {
+  display: flex;
+  flex-shrink: 0
+}
+.chat-message-center {
+  margin: auto;
+}
+.chat-message-left {
+  margin-right: auto
+}
+
+.chat-message-right {
+  flex-direction: row-reverse;
+  margin-left: auto
+}
+.py-3 {
+  padding-top: 1rem!important;
+  padding-bottom: 1rem!important;
+}
+.px-4 {
+  padding-right: 1.5rem!important;
+  padding-left: 1.5rem!important;
+}
+.flex-grow-0 {
+  flex-grow: 0!important;
+}
+.border-top {
+  border-top: 1px solid #dee2e6!important;
+}
+
+:root {
+  --rowHeight: 98vh;
+  --colWidth: 98vw;
+}
+
+body{
+  background: black;
+}
+
+.videos {
+
+  display: grid;
+  grid-gap: 5px;
+  grid-auto-flow: row;
+
+  grid-template-columns: repeat(auto-fit, minmax(var(--colWidth), 1fr)) ;
+}
+
+.videoContainer {
+  position: relative;
+  overflow: hidden;
+
+  min-height: var(--rowHeight);
+  min-width: var(--colWidth);
+
+}
+
+.videoContainer video {
+
+  position: inherit;
+  left: 0;
+  bottom: 0;
+  height: auto;
+  width: 100%;
+}
+
+.videoLabel {
+  color: white;
+  font: bold 18px Arial, Sans-Serif;
+  line-height: 18px;
+  height: 18px;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 4px;
+}
