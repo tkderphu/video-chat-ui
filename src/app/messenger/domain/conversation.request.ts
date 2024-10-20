@@ -1,4 +1,4 @@
 export class ConversationRequest {
-  userIds: Set<number> = new Set<number>()
+  userIds: Array<number> = new Array<number>()
   name: string = ''
 }

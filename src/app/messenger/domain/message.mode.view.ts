@@ -7,7 +7,7 @@ export interface MessageModeView{
   fromUser: UserModelView
   content: string
   detachImages: Array<string>
-  video: boolean
+  messageType: string
   toConversation: ConversationModelView
   
 }

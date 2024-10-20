@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import {LoginComponent} from "./auth/login/login.component";
 import {RegisterComponent} from "./auth/register/register.component";
 import {ChatFrameComponent} from "./messenger/chat-frame/chat-frame.component";
+import { FormConversationComponent } from './messenger/conversation/form-conversation/form-conversation.component';
 import {FrameVideoComponent} from "./messenger/frame-video/frame-video.component";
 
 const routes: Routes = [
@@ -21,6 +22,10 @@ const routes: Routes = [
   {
     path: 'video-call',
     component: FrameVideoComponent
+  },
+  {
+    path: 'form-conversation',
+    component: FormConversationComponent
   }
 ];
 

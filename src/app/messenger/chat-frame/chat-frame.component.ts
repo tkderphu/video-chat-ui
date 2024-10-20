@@ -7,7 +7,6 @@ import { MessageRequest } from "../domain/message.request";
 import { UserService } from "../../auth/service/user.service";
 import { MessageService } from "../service/message.service";
 import { ConversationService } from "../service/conversation.service";
-import { StompService } from '../service/stomp.service';
 import * as Stomp from 'stompjs';
 import * as SockJS from 'sockjs-client';
 import { environment } from 'src/environments/environment.development';
@@ -22,7 +21,7 @@ export class ChatFrameComponent implements OnInit {
   listConversationOfUser?: Array<ConversationModelView>;
   users?: Array<UserModelView>;
   currentConversation?: ConversationModelView
-  messages?: Array<MessageModeView> = new Array<MessageModeView>();
+  messages: Array<MessageModeView> = new Array<MessageModeView>();
   messageContent: string = ''
   stompClient: any;
 
@@ -45,8 +44,17 @@ export class ChatFrameComponent implements OnInit {
             this.stompClient = Stomp.over(new SockJS(environment.WEB_SOCKET));
             this.stompClient.connect({}, (frame: any) => {
               console.log("todo something: ", frame)
+              //subscribe received when have a public conversation is created
               this.stompClient.subscribe(
-                "/topic/private/mesages/conversation/user/" + Utils.getPayload().id,
+                "/topic/private/conversation/user/" + Utils.getPayload().id,
+                (payload: any) => {
+                  const conversation : ConversationModelView = JSON.parse(payload.body)
+                  this.listConversationOfUser?.unshift(conversation)
+                }
+              )
+              //subscribe received message
+              this.stompClient.subscribe(
+                "/topic/private/messages/conversation/user/" + Utils.getPayload().id,
                 (payload: any) => {
                   const message: MessageModeView = JSON.parse(payload.body);
                   console.log("received message: ", message)
@@ -92,6 +100,7 @@ export class ChatFrameComponent implements OnInit {
                       } else {
                         const conversation: ConversationModelView = message.toConversation;
                         conversation.displayName = message.fromUser.fullName;
+                        conversation.recentMessage = message;
                         //@ts-ignore
                         conversation.imageRepresent = message.fromUser.avatar;
                         this.listConversationOfUser.unshift(conversation)
@@ -122,7 +131,7 @@ export class ChatFrameComponent implements OnInit {
   }
 
   joinVideoCall(message: MessageModeView) {
-    window.location.href = `/video-call?id=${message.id}`
+    window.open(`/video-call?id=${message.id}`)
   }
 
   sendMessage(video: boolean = false) {
@@ -130,7 +139,7 @@ export class ChatFrameComponent implements OnInit {
     const request: MessageRequest = {
       destId: this.currentConversation?.id,
       video: video,
-      content: this.messageContent
+      content: video ? "--->Vừa gọi video-call<---" : this.messageContent
     }
 
     const formData = new FormData()
@@ -159,6 +168,7 @@ export class ChatFrameComponent implements OnInit {
       .subscribe({
         next: response => {
           if (response.status === 200) {
+            //@ts-ignore
             this.messages = response.data
           }
         }
@@ -184,6 +194,7 @@ export class ChatFrameComponent implements OnInit {
               .subscribe({
                 next: response => {
                   if (response.status === 200) {
+                    //@ts-ignore
                     this.messages = response.data;
                   } else {
                     alert("Xảy ra lỗi khi lấy message của conversation")

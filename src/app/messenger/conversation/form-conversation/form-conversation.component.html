@@ -1,40 +1,36 @@
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-  Create Conversation
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal1">
+  Tạo cuộc trò chuyện
 </button>
 <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+<div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel1"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Create Conversation</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="exampleModalLabel1">Tạo cuộc trò chuyện</h5>
       </div>
       <div class="modal-body">
-        <div>
+        <div class="form">
           <div class="form-group">
-            <label for="exampleInputEmail1">Email</label>
-            <input type="text"
-                   class="form-control"
-                   id="exampleInputEmail1"
-                   aria-describedby="emailHelp"
-                   placeholder="Enter email"
-                   name="name"
-                   [(ngModel)]="conversationRequest.name"
-            >
+            <label for="exampleInputEmail1">Tên nhóm</label>
+            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+              placeholder="Tên nhóm trò chuyện" name="name" [(ngModel)]="conversationRequest.name">
           </div>
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-            <label class="form-check-label" for="flexCheckDefault">
-              Default checkbox
-            </label>
+          <div class="form-group">
+            <label for="select">Thêm User(Tối thiểu là 2 người)</label>
+            <select id="select" class="form-select w-100 form-control"
+              name="userIds"
+             multiple aria-label="Default select example">
+              <option *ngFor="let user of listUser" 
+                value="{{ user.id }}"
+              >{{ user.fullName }}</option>
+            </select>
           </div>
+          <button (click)="createConversation()" class="btn btn-primary w-100">Tạo</button>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" (click)="createConversation()">Submit</button>
       </div>
     </div>
   </div>
 </div>
+
