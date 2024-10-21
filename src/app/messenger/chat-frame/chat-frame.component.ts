@@ -28,12 +28,16 @@ export class ChatFrameComponent implements OnInit {
   constructor(private userService: UserService,
     protected messageService: MessageService,
     protected conversationService: ConversationService) {
+      if(Utils.tokenIsExpired()) {
+        window.location.href = '/login'
+      }
   }
 
   ngOnInit(): void {
     this.userService.getAllUser().subscribe({
       next: response => {
         if (response.status === 200) this.users = response.data;
+
       }
     })
     this.conversationService.getAllConversationOfCurrentUser()
@@ -41,6 +45,7 @@ export class ChatFrameComponent implements OnInit {
         next: (response) => {
           if (response.status === 200) {
             this.listConversationOfUser = response.data
+            console.log(this.listConversationOfUser)
             this.stompClient = Stomp.over(new SockJS(environment.WEB_SOCKET));
             this.stompClient.connect({}, (frame: any) => {
               console.log("todo something: ", frame)
@@ -48,7 +53,7 @@ export class ChatFrameComponent implements OnInit {
               this.stompClient.subscribe(
                 "/topic/private/conversation/user/" + Utils.getPayload().id,
                 (payload: any) => {
-                  const conversation : ConversationModelView = JSON.parse(payload.body)
+                  const conversation: ConversationModelView = JSON.parse(payload.body)
                   this.listConversationOfUser?.unshift(conversation)
                 }
               )
@@ -76,23 +81,23 @@ export class ChatFrameComponent implements OnInit {
                     return value.id !== message.toConversation.id;
                   });
                   this.listConversationOfUser = new Array<ConversationModelView>();
-               
+
                   if (listConversation) {
 
                     //@ts-ignore
                     this.listConversationOfUser.push(...listConversation);
-                    
+
                   }
 
-                  if(conversationInList) {
+                  if (conversationInList) {
                     conversationInList.recentMessage = message;
-                    if(this.currentConversation && this.currentConversation.id === conversationInList.id) {
+                    if (this.currentConversation && this.currentConversation.id === conversationInList.id) {
                       this.currentConversation = conversationInList;
                     }
                     this.listConversationOfUser.unshift(conversationInList)
                   } else {
-                    if(message.toConversation.scope === 'PRIVATE') {
-                      if(message.fromUser.id === Utils.getPayload().id) {
+                    if (message.toConversation.scope === 'PRIVATE') {
+                      if (message.fromUser.id === Utils.getPayload().id) {
                         //@ts-ignore
                         this.currentConversation.recentMessage = message;
                         //@ts-ignore
@@ -120,16 +125,10 @@ export class ChatFrameComponent implements OnInit {
         },
         error: (err) => console.error(err)
       })
-  }
-
-  chatSpecificUser(user: UserModelView) {
 
   }
 
-  navigateVideo() {
-
-  }
-
+ 
   joinVideoCall(message: MessageModeView) {
     window.open(`/video-call?id=${message.id}`)
   }
@@ -164,6 +163,7 @@ export class ChatFrameComponent implements OnInit {
   getAllMessageOfConversation(conversation: ConversationModelView) {
     this.messages = new Array<MessageModeView>()
     this.currentConversation = conversation;
+    console.log(this.currentConversation)
     this.messageService?.getAllMessageOfConversation(conversation.id)
       .subscribe({
         next: response => {
@@ -177,6 +177,34 @@ export class ChatFrameComponent implements OnInit {
 
   addConversation(response: ConversationModelView) {
     this.listConversationOfUser?.unshift(response)
+  }
+
+
+  getTime(createdDate?: string) {
+    //@ts-ignore
+    let date: Date = new Date(createdDate)
+    let now: Date = new Date()
+
+    let subtract = now.getTime() - date.getTime();
+    let second:number = Number.parseInt((subtract / 1000) + "") ;
+    let minute: number = Number.parseInt((second / 60) + "")
+    let hour : number= Number.parseInt((minute / 60) + "")
+    let day: number = Number.parseInt((hour / 24) +"");
+    if (day == 1) {
+      return `Hôm qua ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+    } else if (day == 0) {
+      let str = "";
+      if (hour >= 1) {
+        str += hour + "h"
+      }
+      if (minute - hour * 60 >= 1) {
+        str += (minute - hour * 60) + "p"
+      }
+      str += (second - minute * 60) + 's';
+      return str + ' trước';
+    } else {
+      return `${date.getDate()}/${date.getMonth() +1}/${date.getFullYear()}${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+    }
   }
 
 

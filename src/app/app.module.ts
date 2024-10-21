@@ -23,7 +23,7 @@ import { VideoComponent } from './messenger/frame-video/video/video.component';
     ChatFrameComponent,
     FormConversationComponent,
     FrameVideoComponent,
-    VideoComponent
+    VideoComponent,
   ],
   imports: [
     BrowserModule,
