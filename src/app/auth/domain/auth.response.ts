@@ -1,6 +1,7 @@
+import { UserModelView } from "./user.model.view"
+
 export interface AuthResponse {
-  id: number
   uuid: string
-  expiredTime: number
-  fullName: string
+  expiredTime: number,
+  info: UserModelView  
 }

@@ -10,6 +10,7 @@ import { ConversationService } from "../service/conversation.service";
 import * as Stomp from 'stompjs';
 import * as SockJS from 'sockjs-client';
 import { environment } from 'src/environments/environment.development';
+import { AuthResponse } from 'src/app/auth/domain/auth.response';
 @Component({
   selector: 'app-chat-frame',
   templateUrl: './chat-frame.component.html',
@@ -51,7 +52,7 @@ export class ChatFrameComponent implements OnInit {
               console.log("todo something: ", frame)
               //subscribe received when have a public conversation is created
               this.stompClient.subscribe(
-                "/topic/private/conversation/user/" + Utils.getPayload().id,
+                "/topic/private/conversation/user/" + Utils.getPayload().info.id,
                 (payload: any) => {
                   const conversation: ConversationModelView = JSON.parse(payload.body)
                   this.listConversationOfUser?.unshift(conversation)
@@ -59,11 +60,11 @@ export class ChatFrameComponent implements OnInit {
               )
               //subscribe received message
               this.stompClient.subscribe(
-                "/topic/private/messages/conversation/user/" + Utils.getPayload().id,
+                "/topic/private/messages/conversation/user/" + Utils.getPayload().info.id,
                 (payload: any) => {
                   const message: MessageModeView = JSON.parse(payload.body);
                   console.log("received message: ", message)
-                  if (message.fromUser.id === Utils.getPayload().id) {
+                  if (message.fromUser.id === Utils.getPayload().info.id) {
                     //@ts-ignore
                     this.currentConversation.id = message.toConversation.id
                   }
@@ -97,7 +98,7 @@ export class ChatFrameComponent implements OnInit {
                     this.listConversationOfUser.unshift(conversationInList)
                   } else {
                     if (message.toConversation.scope === 'PRIVATE') {
-                      if (message.fromUser.id === Utils.getPayload().id) {
+                      if (message.fromUser.id === Utils.getPayload().info.id) {
                         //@ts-ignore
                         this.currentConversation.recentMessage = message;
                         //@ts-ignore
@@ -130,11 +131,12 @@ export class ChatFrameComponent implements OnInit {
 
  
   joinVideoCall(message: MessageModeView) {
-    window.open(`/video-call?id=${message.id}`)
+    window.open(`/video-call?id=${message.id}&room=${message.toConversation.id}`)
   }
 
   sendMessage(video: boolean = false) {
-    const file = document.getElementById("file")
+    //@ts-ignore
+    const file = document.getElementById("file").files
     const request: MessageRequest = {
       destId: this.currentConversation?.id,
       video: video,
@@ -143,6 +145,9 @@ export class ChatFrameComponent implements OnInit {
 
     const formData = new FormData()
     formData.set("messageRequest", JSON.stringify(request))
+    for(let i = 0; i < file.length; i++) {
+      formData.append("files", file[i])
+    }
 
     this.messageService.createMessage(formData)
       .subscribe({
@@ -249,6 +254,23 @@ export class ChatFrameComponent implements OnInit {
       })
   }
 
+  uploadAvatar() {
+    //@ts-ignore
+    const files = document.getElementById("file-up-load-image").files;
+    const formData = new FormData();
+    formData.append("file", files[0])
+    this.userService.uploadAvatar(formData).subscribe({
+      next: (response) => {
+        const payload: AuthResponse = Utils.getPayload();
+        payload.info = response.data;
+        window.localStorage.setItem("tk", JSON.stringify(payload))
+        window.location.reload()
+      }
+    })
+  }
 
+  redirect_image(image: string) {
+    window.open(image, "_blank");
+  }
 
 }

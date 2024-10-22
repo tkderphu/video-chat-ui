@@ -56,24 +56,36 @@ export class FrameVideoComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.start_video_call();
     this.conversationId = this.activatedRoute.snapshot.queryParams['room']
-    // if(!this.conversationId) {
-    //   alert("Can't find room")
-    //   window.history.back()
-    // } else {
-    //   this.conversationService.checkWhetherConversationIsValidAndHaveContainCurrentUser()
-    //     .subscribe({
-    //       next: response => {
-    //         if(response.status !== 200) {
-    //           alert("You can't access into this room!")
-    //           window.history.back()
-    //         } else {
-    //           this.start_video_call();
-    //         }
-    //       }
-    //     })
-    // }
+    if(!this.conversationId) {
+      // alert("Can't find room")
+      //@ts-ignore
+      window.open('','_self').close()
+    } else {
+      this.conversationService.checkWetherCurrentUserInConversationOrNot(
+        this.conversationId
+      )
+        .subscribe({
+          next: response => {
+            console.log("find: ", response)
+            if(response.status !== 200) {
+              alert(response.message)
+              window.close()
+            } else {
+              if(response.data) {
+                this.start_video_call();
+              } else {
+                alert("You can't access into room")
+                window.history.back()
+              }
+            }
+          },
+          error: (error) => {
+            window.history.back();
+            console.log(error);
+          }
+        })
+    }
   }
 
 
@@ -237,6 +249,10 @@ export class FrameVideoComponent implements OnInit {
           undefined,
         )))
     }).catch(errorHandler);
+  }
+
+  close() {
+    window.close()
   }
 
   protected readonly Array = Array;

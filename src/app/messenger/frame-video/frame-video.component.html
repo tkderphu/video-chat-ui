@@ -1,4 +1,11 @@
-
+<div class="mt-3 mb-2 d-flex justify-content-around">
+  <div *ngIf="mapStream" class="text-center">
+    <h2 >Number of user: {{mapStream.size}}</h2>
+  </div>
+  <div>
+    <button (click)="close()" class="btn btn-primary">Close</button>
+  </div>
+</div>
 <div style="background-color: black;" class="d-flex flex-wrap">
   <app-video
     *ngFor="let pair of Array.from(mapStream.values())"

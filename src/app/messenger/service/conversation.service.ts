@@ -31,9 +31,9 @@ export class ConversationService {
     )
   }
 
-  checkWhetherConversationIsValidAndHaveContainCurrentUser() {
+  checkWetherCurrentUserInConversationOrNot(conversationId: string) {
     return this.client.get<ApiResponse<any>>(
-      this.URL,
+      this.URL + "/" + conversationId + "/checkUser",
       {headers: Header.header()}
     )
   }
