@@ -47,5 +47,5 @@ jobs:
             context: .
             push: true
             platforms: linux/amd64
-            tag: ${{ secrets.DOCKER_HUB_USERNAME }}/btl_java_frontend:${{steps.extract_version.outputs.VERSION}}, ${{ secrets.DOCKER_HUB_USERNAME }}/btl_java_frontend:latest
+            tags: ${{ secrets.DOCKER_HUB_USERNAME }}/btl_java_frontend:${{ steps.extract_version.outputs.VERSION }}, ${{ secrets.DOCKER_HUB_USERNAME }}/btl_java_frontend:latest
 
