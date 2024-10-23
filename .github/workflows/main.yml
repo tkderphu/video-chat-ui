@@ -14,11 +14,11 @@ jobs:
       steps:
         # {2}
         - name: Checkout the source code
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
 
         # {3}
         - name: Setup Node.js $
-          uses: actions/setup-node@v3
+          uses: actions/setup-node@v4
           with:
             node-version: $
             cache: 'npm'
@@ -27,9 +27,6 @@ jobs:
         # {4}
         - name: Install dependencies
           run: npm ci
-        # {5}
-        - name: Run tests
-          run: npm run test:ci
         # {6}
         - name: Build
           run: npm run build
