@@ -114,7 +114,7 @@
                 <input type="text" class="form-control" name="message" [(ngModel)]="messageContent"
                   placeholder="Type your message">
                 <form enctype="multipart/form-data">
-                  <input type="file" multiple class="form-control" name="file" id="file">
+                  <input type="file" accept="image/*" multiple class="form-control" name="file" id="file">
                 </form>
                 <button class="btn btn-primary" (click)="sendMessage()">Send</button>
               </div>

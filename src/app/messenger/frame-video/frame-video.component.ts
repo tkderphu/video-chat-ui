@@ -5,6 +5,7 @@ import { ActivatedRoute } from "@angular/router";
 import { SignalPayload } from "../domain/signal.payload";
 import { Pair, PeerInfo } from "../domain/peer.info";
 import { MessageService } from '../service/message.service';
+import {Utils} from "../../common/utils";
 const ICE_SERVERS = {
   iceServers: [
     {
@@ -95,7 +96,7 @@ export class FrameVideoComponent implements OnInit {
     }
     //@ts-ignore
     this.localId = localStorage.getItem("peerId")
-    this.localDisplay = "quangphu - " + this.localId
+    this.localDisplay = Utils.getPayload().info.fullName
     navigator.mediaDevices.getUserMedia(constraints)
       .then((stream) => {
         this.localPeer = {

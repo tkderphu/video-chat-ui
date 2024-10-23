@@ -149,6 +149,9 @@ export class ChatFrameComponent implements OnInit {
       formData.append("files", file[i])
     }
 
+    //@ts-ignore
+    document.getElementById("file").value=''
+
     this.messageService.createMessage(formData)
       .subscribe({
         next: res => {
