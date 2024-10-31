@@ -13,7 +13,7 @@ import { Utils } from "src/app/common/utils";
 })
 export class UserService {
 
-  private  URL: string =environment.REST_API + "/users";
+  private  URL: string = environment.REST_API + "/users";
 
   constructor(private client: HttpClient) {
   }
