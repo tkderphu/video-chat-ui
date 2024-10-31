@@ -9,9 +9,9 @@ import {Utils} from "../../common/utils";
 const ICE_SERVERS = {
   iceServers: [
     {
-      urls: 'turn:my-turn-server.mycompany.com:3478',
-      username: 'user',
-      credential: 'pass'
+      urls: 'turn:103.109.37.75:3478',
+      username: 'test',
+      credential: 'test'
     }
   ]
 }
