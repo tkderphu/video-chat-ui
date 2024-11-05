@@ -15,6 +15,11 @@ import {ConversationService} from "./messenger/service/conversation.service";
 import { FrameVideoComponent } from './messenger/frame-video/frame-video.component';
 import { VideoComponent } from './messenger/frame-video/video/video.component';
 
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import {SocketService} from "./messenger/service/socket.service";
+
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -29,12 +34,13 @@ import { VideoComponent } from './messenger/frame-video/video/video.component';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
   ],
   providers: [
     UserService,
     MessageService,
     ConversationService,
+    SocketService,
     HttpClient
     ],
   bootstrap: [AppComponent]

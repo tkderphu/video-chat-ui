@@ -9,5 +9,5 @@ export interface MessageModeView{
   detachImages: Array<string>
   messageType: string
   toConversation: ConversationModelView
-  
+
 }

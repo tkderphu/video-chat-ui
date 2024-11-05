@@ -1,23 +1,22 @@
-import { Component, OnInit } from '@angular/core';
-import { Utils } from "../../common/utils";
-import { UserModelView } from "../../auth/domain/user.model.view";
-import { ConversationModelView } from "../domain/conversation.model.view";
-import { MessageModeView } from "../domain/message.mode.view";
-import { MessageRequest } from "../domain/message.request";
-import { UserService } from "../../auth/service/user.service";
-import { MessageService } from "../service/message.service";
-import { ConversationService } from "../service/conversation.service";
-import * as Stomp from 'stompjs';
-import * as SockJS from 'sockjs-client';
-import { environment } from 'src/environments/environment.development';
-import { AuthResponse } from 'src/app/auth/domain/auth.response';
+import {Component, OnInit} from '@angular/core';
+import {Utils} from "../../common/utils";
+import {UserModelView} from "../../auth/domain/user.model.view";
+import {ConversationModelView} from "../domain/conversation.model.view";
+import {MessageModeView} from "../domain/message.mode.view";
+import {MessageRequest} from "../domain/message.request";
+import {UserService} from "../../auth/service/user.service";
+import {MessageService} from "../service/message.service";
+import {ConversationService} from "../service/conversation.service";
+import {AuthResponse} from 'src/app/auth/domain/auth.response';
+import {SocketService} from "../service/socket.service";
+
 @Component({
   selector: 'app-chat-frame',
   templateUrl: './chat-frame.component.html',
   styleUrls: ['./chat-frame.component.css']
 })
 export class ChatFrameComponent implements OnInit {
-
+  socket: any;
   protected readonly Utils = Utils;
   listConversationOfUser?: Array<ConversationModelView>;
   users?: Array<UserModelView>;
@@ -28,13 +27,24 @@ export class ChatFrameComponent implements OnInit {
 
   constructor(private userService: UserService,
     protected messageService: MessageService,
-    protected conversationService: ConversationService) {
+    protected conversationService: ConversationService,
+              private socketService: SocketService) {
+      this.socket = this.socketService.getSocket();
+
+
       if(Utils.tokenIsExpired()) {
         window.location.href = '/login'
       }
   }
 
   ngOnInit(): void {
+    // this.socketService.connect();
+    // this.socketService.getMessages().subscribe((data : any) => {
+    //   console.log("message: ", data)
+    // })
+    // this.socketService.subscribe("response", (payload: any) => {
+    //   console.log("data: ", payload.data);
+    // })
     this.userService.getAllUser().subscribe({
       next: response => {
         if (response.status === 200) this.users = response.data;
@@ -47,23 +57,28 @@ export class ChatFrameComponent implements OnInit {
           if (response.status === 200) {
             this.listConversationOfUser = response.data
             console.log(this.listConversationOfUser)
-            this.stompClient = Stomp.over(new SockJS(environment.WEB_SOCKET));
-            this.stompClient.connect({}, (frame: any) => {
-              console.log("todo something: ", frame)
+            // this.stompClient = Stomp.over(new SockJS(environment.WEB_SOCKET));
+            // this.stompClient.connect({}, (frame: any) => {
+            //   console.log("todo something: ", frame)
               //subscribe received when have a public conversation is created
-              this.stompClient.subscribe(
+            console.log("log1")
+              this.socket.on(
                 "/topic/private/conversation/user/" + Utils.getPayload().info.id,
                 (payload: any) => {
-                  const conversation: ConversationModelView = JSON.parse(payload.body)
+                  console.log("")
+                  const conversation: ConversationModelView = payload;
                   this.listConversationOfUser?.unshift(conversation)
                 }
               )
+        console.log("log2")
               //subscribe received message
-              this.stompClient.subscribe(
+              this.socket.on(
                 "/topic/private/messages/conversation/user/" + Utils.getPayload().info.id,
                 (payload: any) => {
-                  const message: MessageModeView = JSON.parse(payload.body);
-                  console.log("received message: ", message)
+                  console.log("payload: ", payload)
+                  const message: MessageModeView = payload;
+                  // console.log("message received: ", message)
+                  // console.log("received message: ", message)
                   if (message.fromUser.id === Utils.getPayload().info.id) {
                     //@ts-ignore
                     this.currentConversation.id = message.toConversation.id
@@ -119,7 +134,7 @@ export class ChatFrameComponent implements OnInit {
 
                 }
               )
-            })
+            // })
           } else {
             alert(response.message)
           }
@@ -129,7 +144,7 @@ export class ChatFrameComponent implements OnInit {
 
   }
 
- 
+
   joinVideoCall(message: MessageModeView) {
     window.open(`/video-call?id=${message.id}&room=${message.toConversation.id}`)
   }
@@ -143,20 +158,21 @@ export class ChatFrameComponent implements OnInit {
       content: video ? "--->Vừa gọi video-call<---" : this.messageContent
     }
 
-    const formData = new FormData()
-    formData.set("messageRequest", JSON.stringify(request))
-    for(let i = 0; i < file.length; i++) {
-      formData.append("files", file[i])
-    }
+    // const formData = new FormData()
+    // formData.set("messageRequest", JSON.stringify(request))
+    // for(let i = 0; i < file.length; i++) {
+    //   formData.append("files", file[i])
+    // }
 
     //@ts-ignore
     document.getElementById("file").value=''
 
-    this.messageService.createMessage(formData)
+    this.messageService.createMessage(request)
       .subscribe({
         next: res => {
           if (res.status === 200) {
             const message: MessageModeView = res.data;
+            console.log("data created: ", message)
             this.messageContent = ''
             if (video) {
               this.joinVideoCall(message)
@@ -178,6 +194,7 @@ export class ChatFrameComponent implements OnInit {
           if (response.status === 200) {
             //@ts-ignore
             this.messages = response.data
+            console.log("list:",response.data)
           }
         }
       })
@@ -276,4 +293,18 @@ export class ChatFrameComponent implements OnInit {
     window.open(image, "_blank");
   }
 
+  testSocket() {
+    this.socket.on("response", (data:any) => {
+      console.log("emmiter: ", data)
+    })
+    this.socket.on("test", (data:any) => {
+      console.log("data: ", data)
+    })
+    this.socket.on("/topic/private", (data:any) => {
+      console.log("private: ", data)
+    })
+    this.socket.emit("/topic/private", {data: "dcm"})
+    this.socket.emit("message", {data: "gg"})
+    alert("ok")
+  }
 }

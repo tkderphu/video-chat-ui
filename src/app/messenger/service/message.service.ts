@@ -15,13 +15,11 @@ export class MessageService {
   constructor(private client: HttpClient) {
   }
 
-  createMessage(formData: FormData  ) {
+  createMessage(request: MessageRequest) {
     return this.client.post<ApiResponse<any>>(
       this.URL,
-      formData,
-      {headers: new HttpHeaders({
-        'Authorization': "UUID " + Utils.getPayload().uuid
-       })}
+      request,
+      {headers: Header.header()}
     )
   }
 

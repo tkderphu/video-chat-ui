@@ -95,7 +95,7 @@
                       <div class="d-flex flex-wrap">
                         <img style="margin-left: 10px" style="cursor: pointer; margin-left: 10px;" *ngFor="let image of message.detachImages"
                           class="rounded d-block" width="150px" height="150px" [src]="image"
-                          (click)="redirect_image(image)" 
+                          (click)="redirect_image(image)"
                           >
                       </div>
                       {{ message.content }}
@@ -125,4 +125,5 @@
     </div>
   </main>
 
+  <button (click)="testSocket()">Test socket</button>
 </div>
