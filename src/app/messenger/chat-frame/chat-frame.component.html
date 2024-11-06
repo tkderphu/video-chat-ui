@@ -5,8 +5,8 @@
         <h1 class="h3 mb-2 mt-3" style="margin-right: 20px;">Welcome {{ Utils.getPayload().info.fullName }}</h1>
         <img src="{{Utils.getPayload().info.avatar ? Utils.getPayload().info.avatar: 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
             class="rounded-circle mr-1"  width="50" height="50">
-        <input type="file" style="margin-left: 20px;" id="file-up-load-image">
-        <button class="btn btn-primary" (click)="uploadAvatar()">Upload Image</button>
+        <!-- <input type="file" style="margin-left: 20px;" id="file-up-load-image">
+        <button class="btn btn-primary" (click)="uploadAvatar()">Upload Image</button> -->
       </div>
       <div class="mb-2 d-flex">
         <div *ngFor="let user of users" style="margin-right: 20px; cursor: pointer"
@@ -113,9 +113,9 @@
               <div class="input-group">
                 <input type="text" class="form-control" name="message" [(ngModel)]="messageContent"
                   placeholder="Type your message">
-                <form enctype="multipart/form-data">
+                <!-- <form enctype="multipart/form-data">
                   <input type="file" accept="image/*" multiple class="form-control" name="file" id="file">
-                </form>
+                </form> -->
                 <button class="btn btn-primary" (click)="sendMessage()">Send</button>
               </div>
             </div>
@@ -124,6 +124,4 @@
       </div>
     </div>
   </main>
-
-  <button (click)="testSocket()">Test socket</button>
 </div>

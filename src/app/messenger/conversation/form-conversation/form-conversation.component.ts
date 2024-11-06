@@ -3,6 +3,7 @@ import {ConversationService} from "../../service/conversation.service";
 import {ConversationRequest} from "../../domain/conversation.request";
 import {ConversationModelView} from "../../domain/conversation.model.view";
 import { UserModelView } from 'src/app/auth/domain/user.model.view';
+import { Utils } from 'src/app/common/utils';
 declare var $ : any
 @Component({
   selector: 'app-form-conversation',
@@ -24,6 +25,7 @@ export class FormConversationComponent {
     var options = document.getElementById('select').selectedOptions;
     //@ts-ignore
     var values = Array.from(options).map(( value ) => value.value);
+    values.push(Utils.getPayload().info.id)
     //@ts-ignore
     console.log(values);
 

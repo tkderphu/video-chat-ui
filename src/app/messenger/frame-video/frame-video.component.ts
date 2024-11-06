@@ -6,12 +6,16 @@ import { SignalPayload } from "../domain/signal.payload";
 import { Pair, PeerInfo } from "../domain/peer.info";
 import { MessageService } from '../service/message.service';
 import {Utils} from "../../common/utils";
+import { SocketService } from '../service/socket.service';
 const ICE_SERVERS = {
   iceServers: [
     {
       urls: 'turn:viosmash.site:3478',
       username: 'test',
       credential: 'test'
+    },
+    {
+      urls: "stun:stun.l.google.com:19302"
     }
   ]
 }
@@ -51,12 +55,16 @@ export class FrameVideoComponent implements OnInit {
   localPeer?: Pair
   mapStream: Map<string, Pair> = new Map<string, Pair>();
   localStream?: MediaStream
-  stompClient: any = new StompService().getStompClient()
+  // stompClient: any = new StompService().getStompClient()
+  socket: any
   constructor(
     private conversationService: ConversationService,
     private activatedRoute: ActivatedRoute,
-    private messageService: MessageService) {
-  }
+    private messageService: MessageService,
+    private socketService: SocketService) {
+      this.socket = this.socketService.getSocket()
+
+    }
 
   ngOnInit(): void {
     this.conversationId = this.activatedRoute.snapshot.queryParams['room']
@@ -96,8 +104,9 @@ export class FrameVideoComponent implements OnInit {
     if(!localStorage.getItem("peerId")) {
       localStorage.setItem("peerId", createUUID())
     }
-    //@ts-ignore
+    // @ts-ignore
     this.localId = localStorage.getItem("peerId")
+    // this.localId = createUUID()
     this.localDisplay = Utils.getPayload().info.fullName
     navigator.mediaDevices.getUserMedia(constraints)
       .then((stream) => {
@@ -113,11 +122,11 @@ export class FrameVideoComponent implements OnInit {
         window.location.href='/messenger'
       })
       .then(() => {
-        this.stompClient.subscribe(
+        this.socket.on(
           "/topic/room",
           (payload: any) => {
             console.log(payload)
-            const signalPayload: SignalPayload = JSON.parse(payload.body)
+            const signalPayload: SignalPayload = JSON.parse(payload)
             const peerId = signalPayload.localUuid
             if (peerId === this.localId
               || (signalPayload.dest !== this.localId
@@ -129,10 +138,9 @@ export class FrameVideoComponent implements OnInit {
             if (signalPayload.displayName && signalPayload.dest === this.conversationId) {
               //@ts-ignore
               this.setUpPeer(signalPayload.localUuid, signalPayload.displayName);
-              this.stompClient.send(
-                "/app/signal",
+              this.socket.emit(
+                "/signal",
                 // "/app/video-call/conversation/" + this.conversationId,
-                {},
                 JSON.stringify(new SignalPayload(
                   this.localId,
                   this.localDisplay,
@@ -168,9 +176,8 @@ export class FrameVideoComponent implements OnInit {
             }
           }
         )
-        this.stompClient.send(
-          "/app/signal",
-          {},
+        this.socket.emit(
+          "/signal",
           JSON.stringify(new SignalPayload(
             this.localId,
             this.localDisplay,
@@ -217,9 +224,8 @@ export class FrameVideoComponent implements OnInit {
 
     this.peerConnections[peerId].pc.onicecandidate = (event) => {
       if (event.candidate) {
-        this.stompClient.send(
-          "/app/signal",
-          {},
+        this.socket.emit(
+          "/signal",
           JSON.stringify(new SignalPayload(
             this.localId,
             undefined,
@@ -241,9 +247,8 @@ export class FrameVideoComponent implements OnInit {
   private createdDescription(description: any, peerUuid: string) {
     console.log(`got description, peer ${peerUuid}`);
     this.peerConnections[peerUuid].pc.setLocalDescription(description).then(() => {
-      this.stompClient.send(
-        "/app/signal",
-        {},
+      this.socket.emit(
+        "/signal",
         JSON.stringify(new SignalPayload(
           this.localId,
           undefined,

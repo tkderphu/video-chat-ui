@@ -151,7 +151,7 @@ export class ChatFrameComponent implements OnInit {
 
   sendMessage(video: boolean = false) {
     //@ts-ignore
-    const file = document.getElementById("file").files
+    // const file = document.getElementById("file").files
     const request: MessageRequest = {
       destId: this.currentConversation?.id,
       video: video,
@@ -165,7 +165,7 @@ export class ChatFrameComponent implements OnInit {
     // }
 
     //@ts-ignore
-    document.getElementById("file").value=''
+    // document.getElementById("file").value=''
 
     this.messageService.createMessage(request)
       .subscribe({
