@@ -129,7 +129,7 @@ export class ChatFrameComponent implements OnInit {
 
   }
 
- 
+
   joinVideoCall(message: MessageModeView) {
     window.open(`/video-call?id=${message.id}&room=${message.toConversation.id}`)
   }
@@ -276,4 +276,50 @@ export class ChatFrameComponent implements OnInit {
     window.open(image, "_blank");
   }
 
+  userInConversation(userId: number) {
+    let user = this.currentConversation?.members?.find(user => {
+      return user.id === userId
+    });
+    if(user === undefined) return false;
+    return true;
+  }
+
+  deleteMember(userId: number) {
+    if(this.currentConversation?.owner) {
+      this.conversationService.removeUserInConversation(
+        this.currentConversation.id,
+        userId
+      ).subscribe({
+        next: response => {
+          if(response.status === 200) {
+            //@ts-ignore
+            let list = this.currentConversation.members?.filter((user) => {
+              return user.id !== userId
+            });
+            //@ts-ignore
+            this.currentConversation.members = new Array<UserModelView>(
+              //@ts-ignore
+              ...list
+            );
+          }
+        }
+      })
+    }
+  }
+
+  disbandCurrentConversation() {
+    this.conversationService.deleteById(this.currentConversation?.id)
+      .subscribe({
+        next: res => {
+          this.messages = new Array<MessageModeView>()
+          this.listConversationOfUser = new Array<ConversationModelView>(
+            //@ts-ignore
+            ...this.listConversationOfUser?.filter(con => {
+              return con.id !== this.currentConversation?.id
+            })
+          )
+          this.currentConversation = undefined;
+        }
+      })
+  }
 }

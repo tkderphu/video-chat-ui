@@ -16,10 +16,23 @@ export class ConversationService {
   constructor(private client: HttpClient) {
   }
 
+  removeUserInConversation(conversationId: number, userId: number) {
+    return this.client.delete<ApiResponse<any>>(
+      this.URL + `/${conversationId}/users/${userId}`,
+      {headers: Header.header()}
+    )
+  }
   createConversation(conversationRequest?: ConversationRequest) {
     return this.client.post<ApiResponse<any>>(
       this.URL,
       conversationRequest,
+      {headers: Header.header()}
+    )
+  }
+
+  deleteById(conversationId?: number) {
+    return this.client.delete<ApiResponse<any>>(
+      this.URL +"/" + conversationId,
       {headers: Header.header()}
     )
   }

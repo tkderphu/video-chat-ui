@@ -29,7 +29,7 @@
                 <img src="{{conversation.imageRepresent ? conversation.imageRepresent : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}" class="rounded-circle mr-1"
                   alt="Vanessa Tucker" width="40" height="40">
                 <div class="flex-grow-1 ml-3">
-                  {{ conversation.displayName }}
+                  {{ conversation.displayName }}<b>{{conversation.scope === 'PUBLIC'? '(Nhóm)' : '(Đơn)'}}</b>
                   <div class="small"><span
                       class="fas fa-circle chat-{{conversation.status ? 'online' : 'offline'}}"><b>{{conversation.status
                         ? 'On' : 'Off'}}</b></span>
@@ -58,8 +58,29 @@
                 <div class="flex-grow-1 pl-3">
                   <strong>{{ currentConversation?.displayName }}</strong>
                   <div class="text-muted small"><em>Typing...</em></div>
+                  <a *ngIf="currentConversation?.scope === 'PUBLIC'"
+                     data-toggle="modal" data-target="#showMemberInConversation"
+                     href="javascript:void(0)">Number of members: {{currentConversation?.members?.length}}</a>
                 </div>
                 <div>
+                  <button *ngIf="currentConversation?.scope === 'PUBLIC'"
+                          class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
+                          (click)="disbandCurrentConversation()"
+                  >
+                    Disband
+                  </button>
+                  <button *ngIf="currentConversation?.scope === 'PUBLIC'"
+                          data-toggle="modal" data-target="#addMemberIntoConversation"
+                          class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
+                          >
+                    Add new member
+                  </button>
+                  <button *ngIf="currentConversation?.scope === 'PRIVATE'"
+                          data-toggle="modal" data-target="#inviteMemberIntoConversation"
+                          class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
+                  >
+                    Invite to group
+                  </button>
                   <button (click)="sendMessage(true)" class="btn btn-info btn-lg mr-1 px-3 d-none d-md-inline-block"
                     data-toggle="modal" data-target="#exampleModal">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -95,7 +116,7 @@
                       <div class="d-flex flex-wrap">
                         <img style="margin-left: 10px" style="cursor: pointer; margin-left: 10px;" *ngFor="let image of message.detachImages"
                           class="rounded d-block" width="150px" height="150px" [src]="image"
-                          (click)="redirect_image(image)" 
+                          (click)="redirect_image(image)"
                           >
                       </div>
                       {{ message.content }}
@@ -126,3 +147,111 @@
   </main>
 
 </div>
+
+
+
+
+<!--
+Modal show all member in conversation
+-->
+<div class="modal fade" id="showMemberInConversation" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel1"
+     aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="w-100 modal-title" id="exampleModalLabel1">Group members</h5>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+          <tr>
+            <th scope="col">Avatar</th>
+            <th scope="col">FullName</th>
+            <th *ngIf="currentConversation?.owner" scope="col">Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let user of currentConversation?.members;">
+            <td><img src="{{user.avatar ? user.avatar : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
+                     class="rounded-circle mr-1" width="40" height="40"></td>
+            <td>{{user.fullName}}</td>
+            <td *ngIf="currentConversation?.owner">
+              <button *ngIf="user.id !== Utils.getPayload().info.id" class="btn btn-primary"
+                      (click)="deleteMember(user.id)">Delete
+              </button></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="modal fade" id="addMemberIntoConversation" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2"
+     aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="w-100 modal-title" id="exampleModalLabel2">Add new members</h5>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+          <tr>
+            <th scope="col">Avatar</th>
+            <th scope="col">FullName</th>
+            <th scope="col">Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let user of users">
+            <td><img src="{{user.avatar ? user.avatar : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
+                     class="rounded-circle mr-1" width="40" height="40"></td>
+            <td>{{user.fullName}}</td>
+            <td *ngIf="!userInConversation(user.id)"><button class="btn btn-primary">Invite</button></td>
+            <td *ngIf="userInConversation(user.id)">Da o trong nhom</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="inviteMemberIntoConversation" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3"
+     aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="w-100 modal-title" id="exampleModalLabel3">Your groups</h5>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+          <tr>
+            <th scope="col">Avatar</th>
+            <th scope="col">Name</th>
+            <th scope="col">Member</th>
+            <th scope="col">Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let conversation of listConversationOfUser">
+            <td *ngIf="conversation.scope === 'PUBLIC'"><img src="{{conversation.imageRepresent ? conversation.imageRepresent : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
+                     class="rounded-circle mr-1" width="40" height="40"></td>
+            <td *ngIf="conversation.scope === 'PUBLIC'">{{conversation.displayName}}</td>
+            <td *ngIf="conversation.scope === 'PUBLIC'">{{conversation.members?.length}}</td>
+            <td *ngIf="conversation.scope === 'PUBLIC'"><button class="btn btn-primary">Invite</button></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
