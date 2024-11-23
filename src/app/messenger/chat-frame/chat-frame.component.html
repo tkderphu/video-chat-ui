@@ -63,7 +63,7 @@
                      href="javascript:void(0)">So luong thanh vien: {{currentConversation?.members?.length}}</a>
                 </div>
                 <div>
-                  <button *ngIf="currentConversation?.scope === 'PUBLIC'"
+                  <button  *ngIf="(currentConversation?.owner && currentConversation?.scope === 'PUBLIC')"
                           class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
                           (click)="disbandCurrentConversation()"
                   >
@@ -74,12 +74,6 @@
                           class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
                           >
                     Them thanh vien
-                  </button>
-                  <button *ngIf="currentConversation?.scope === 'PRIVATE'"
-                          data-toggle="modal" data-target="#inviteMemberIntoConversation"
-                          class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
-                  >
-                    Moi vao nhom
                   </button>
                   <button (click)="sendMessage(true)" class="btn btn-info btn-lg mr-1 px-3 d-none d-md-inline-block"
                     data-toggle="modal" data-target="#exampleModal">
@@ -236,39 +230,6 @@ Modal show all member in conversation
             <td>{{user.fullName}}</td>
             <td *ngIf="!userInConversation(user.id)"><button class="btn btn-primary" (click)="inviteUser(user)">Moi</button></td>
             <td *ngIf="userInConversation(user.id)">Da o trong nhom</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal fade" id="inviteMemberIntoConversation" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3"
-     aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="w-100 modal-title" id="exampleModalLabel3">Cac nhom cua ban</h5>
-      </div>
-      <div class="modal-body">
-        <table class="table">
-          <thead>
-          <tr>
-            <th scope="col">Anh</th>
-            <th scope="col">Ten nhom</th>
-            <th scope="col">So luong thanh vien</th>
-            <th scope="col">Hanh dong</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let conversation of listConversationOfUser">
-            <td *ngIf="conversation.scope === 'PUBLIC'"><img src="{{conversation.imageRepresent ? conversation.imageRepresent : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
-                     class="rounded-circle mr-1" width="40" height="40"></td>
-            <td *ngIf="conversation.scope === 'PUBLIC'">{{conversation.displayName}}</td>
-            <td *ngIf="conversation.scope === 'PUBLIC'">{{conversation.members?.length}}</td>
-            <td *ngIf="conversation.scope === 'PUBLIC'"><button class="btn btn-primary" (click)="inviteUserIntoConversation(conversation.id)">Moi</button></td>
           </tr>
           </tbody>
         </table>

@@ -12,6 +12,7 @@ import * as SockJS from 'sockjs-client';
 import {environment} from 'src/environments/environment.development';
 import {AuthResponse} from 'src/app/auth/domain/auth.response';
 import {PinMessageModelView} from "../domain/pin.message.model.view";
+import {toNumbers} from "@angular/compiler-cli/src/version_helpers";
 
 @Component({
   selector: 'app-chat-frame',
@@ -39,7 +40,10 @@ export class ChatFrameComponent implements OnInit {
   ngOnInit(): void {
     this.userService.getAllUser().subscribe({
       next: response => {
-        if (response.status === 200) this.users = response.data;
+        if (response.status === 200) {
+          this.users = response.data;
+          console.log("user: ", this.users)
+        }
 
       }
     })
@@ -58,6 +62,26 @@ export class ChatFrameComponent implements OnInit {
                 (payload: any) => {
                   const conversation: ConversationModelView = JSON.parse(payload.body)
                   this.listConversationOfUser?.unshift(conversation)
+                }
+              )
+              //subscribe delete conversation
+              this.stompClient.subscribe(
+                "/topic/private/conversation/delete/user/" + Utils.getPayload().info.id,
+                (payload: any) => {
+                  const conversationId:number = parseInt(payload.body)
+                  console.log("payload: ", conversationId)
+                  console.log("currentId: ", this.currentConversation?.id)
+                  if(this.currentConversation?.id === conversationId) {
+                    console.log("----delete----")
+                    this.messages = new Array<MessageModeView>()
+                    this.listConversationOfUser = new Array<ConversationModelView>(
+                      //@ts-ignore
+                      ...this.listConversationOfUser?.filter(con => {
+                        return con.id !== this.currentConversation?.id
+                      })
+                    )
+                    this.currentConversation = undefined;
+                  }
                 }
               )
 
@@ -166,7 +190,8 @@ export class ChatFrameComponent implements OnInit {
     const request: MessageRequest = {
       destId: this.currentConversation?.id,
       video: video,
-      content: video ? "--->Vừa gọi video-call<---" : this.messageContent
+      content: video ? "--->Vừa gọi video-call<---" : this.messageContent,
+      user: (this.currentConversation?.recentMessage === undefined) ? true : false
     }
 
     const formData = new FormData()
@@ -273,7 +298,7 @@ export class ChatFrameComponent implements OnInit {
               id: withUser.id,
               status: false,
               recentMessage: undefined,
-              imageRepresent: '',
+              imageRepresent: withUser.avatar,
               scope: 'PRIVATE'
             }
             // alert(response.message)
@@ -337,14 +362,7 @@ export class ChatFrameComponent implements OnInit {
     this.conversationService.deleteById(this.currentConversation?.id)
       .subscribe({
         next: res => {
-          this.messages = new Array<MessageModeView>()
-          this.listConversationOfUser = new Array<ConversationModelView>(
-            //@ts-ignore
-            ...this.listConversationOfUser?.filter(con => {
-              return con.id !== this.currentConversation?.id
-            })
-          )
-          this.currentConversation = undefined;
+          console.log("ok")
         }
       })
   }

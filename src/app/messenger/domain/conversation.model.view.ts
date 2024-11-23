@@ -6,10 +6,11 @@ export interface ConversationModelView {
   recentMessage?: MessageModeView
   id: number
   displayName: string
-  imageRepresent: string
+  imageRepresent?: string
   status: boolean,
   scope: string
   members?: Array<UserModelView>
   owner?: boolean
   pinMessages?: Array<PinMessageModelView>
+  si?: boolean
 }
