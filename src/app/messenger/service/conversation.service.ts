@@ -51,6 +51,13 @@ export class ConversationService {
     )
   }
 
+  inviteUserToConversation(conversationId?: number, userId?: number) {
+    return this.client.put<ApiResponse<any>>(
+      this.URL + "/" + conversationId + "/invite?userId=" + userId,
+      null,
+      {headers: Header.header()}
+    )
+  }
   findPrivateConversationWithUser(withUserId: number) {
     return this.client.get<ApiResponse<any>>(
       this.URL + "/users/" + withUserId,

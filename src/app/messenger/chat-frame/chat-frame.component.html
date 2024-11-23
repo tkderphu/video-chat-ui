@@ -2,11 +2,11 @@
   <main class="content">
     <div class="container p-0">
       <div class="mb-3 d-flex align-items-center flex-wrap">
-        <h1 class="h3 mb-2 mt-3" style="margin-right: 20px;">Welcome {{ Utils.getPayload().info.fullName }}</h1>
+        <h1 class="h3 mb-2 mt-3" style="margin-right: 20px;">Chao mung {{ Utils.getPayload().info.fullName }}</h1>
         <img src="{{Utils.getPayload().info.avatar ? Utils.getPayload().info.avatar: 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
             class="rounded-circle mr-1"  width="50" height="50">
         <input type="file" style="margin-left: 20px;" id="file-up-load-image">
-        <button class="btn btn-primary" (click)="uploadAvatar()">Upload Image</button>
+        <button class="btn btn-primary" (click)="uploadAvatar()">Tai anh</button>
       </div>
       <div class="mb-2 d-flex">
         <div *ngFor="let user of users" style="margin-right: 20px; cursor: pointer"
@@ -36,7 +36,7 @@
                     <div class="text-truncate" style="max-width: 150px;">
                       <b>{{
                         conversation.recentMessage?.fromUser?.id !== Utils.getPayload().info?.id ?
-                        conversation.recentMessage?.fromUser?.fullName : 'You'
+                        conversation.recentMessage?.fromUser?.fullName : 'Ban'
                         }}</b><span>{{conversation.recentMessage ? ': ' : ''}}</span>
                       {{ conversation.recentMessage?.content }}
                     </div>
@@ -57,29 +57,29 @@
                 </div>
                 <div class="flex-grow-1 pl-3">
                   <strong>{{ currentConversation?.displayName }}</strong>
-                  <div class="text-muted small"><em>Typing...</em></div>
+                  <div class="text-muted small"><em>{{currentConversation?.status ? 'Online' : 'Offline'}}</em></div>
                   <a *ngIf="currentConversation?.scope === 'PUBLIC'"
                      data-toggle="modal" data-target="#showMemberInConversation"
-                     href="javascript:void(0)">Number of members: {{currentConversation?.members?.length}}</a>
+                     href="javascript:void(0)">So luong thanh vien: {{currentConversation?.members?.length}}</a>
                 </div>
                 <div>
                   <button *ngIf="currentConversation?.scope === 'PUBLIC'"
                           class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
                           (click)="disbandCurrentConversation()"
                   >
-                    Disband
+                    Giai tan nhom
                   </button>
                   <button *ngIf="currentConversation?.scope === 'PUBLIC'"
                           data-toggle="modal" data-target="#addMemberIntoConversation"
                           class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
                           >
-                    Add new member
+                    Them thanh vien
                   </button>
                   <button *ngIf="currentConversation?.scope === 'PRIVATE'"
                           data-toggle="modal" data-target="#inviteMemberIntoConversation"
                           class="btn btn-primary btn-lg mr-1 px-3 d-none d-md-inline-block"
                   >
-                    Invite to group
+                    Moi vao nhom
                   </button>
                   <button (click)="sendMessage(true)" class="btn btn-info btn-lg mr-1 px-3 d-none d-md-inline-block"
                     data-toggle="modal" data-target="#exampleModal">
@@ -94,6 +94,22 @@
               </div>
             </div>
             <div class="position-relative">
+              <div *ngIf="getLastPin()"
+                   data-toggle="modal" data-target="#seeOtherPinMessage"
+                   class="d-flex flex-column" style="background-color: #dacece; cursor: pointer" title="Xem cac tin ghim">
+                <h4 class="text-center">
+                  <div>Nguoi ghim: <span style="color: red">{{getLastPin()?.owner}}</span></div>
+                    <div>
+                      {{getLastPin()?.message?.fromUser?.fullName}}:
+                      {{getLastPin()?.message?.content}}
+                    </div>
+                </h4>
+                <div class="d-flex justify-content-center align-items-center">
+                  <div class="d-flex">
+                    <p style="margin-right: 10px">Thoi gian ghim: {{ this.getTime(getLastPin()?.createdDate) }}</p>
+                  </div>
+                </div>
+              </div>
               <div class="chat-messages p-4" #scrollMe [scrollTop]="scrollMe.scrollHeight" id="history-message"
                 style="height: 500px;">
                 <div *ngFor="let message of messages"
@@ -105,25 +121,32 @@
                       {{ this.getTime(message.createdDate) }}
                     </div>
                   </div>
-                  <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
-                    <div class="font-weight-bold mb-1">
-                      {{ message.fromUser?.id !== Utils.getPayload().info?.id ? message.fromUser?.fullName : 'You' }}
+                  <div class="d-flex align-items-center" >
+                    <div>
+                      <button class="btn btn-danger small" (click)="pinMessage(message.id)">Ghim tin</button>
                     </div>
-                    <p *ngIf="(message.messageType === 'VIDEO')" style="color: red;">
-                      {{ message.content }}
-                    </p>
-                    <div *ngIf="!(message.messageType === 'VIDEO')">
-                      <div class="d-flex flex-wrap">
-                        <img style="margin-left: 10px" style="cursor: pointer; margin-left: 10px;" *ngFor="let image of message.detachImages"
-                          class="rounded d-block" width="150px" height="150px" [src]="image"
-                          (click)="redirect_image(image)"
-                          >
+                    <div >
+                      <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                        <div class="font-weight-bold mb-1">
+                          {{ message.fromUser?.id !== Utils.getPayload().info?.id ? message.fromUser?.fullName : 'Ban' }}
+                        </div>
+                        <p *ngIf="(message.messageType === 'VIDEO')" style="color: red;">
+                          {{ message.content }}
+                        </p>
+                        <div *ngIf="!(message.messageType === 'VIDEO')">
+                          <div class="d-flex flex-wrap">
+                            <img style="margin-left: 10px" style="cursor: pointer; margin-left: 10px;" *ngFor="let image of message.detachImages"
+                                 class="rounded d-block" width="150px" height="150px" [src]="image"
+                                 (click)="redirect_image(image)"
+                            >
+                          </div>
+                          {{ message.content }}
+                        </div>
+                        <div *ngIf="message.messageType === 'VIDEO'">
+                          <button class="btn btn-primary w-50" (click)="joinVideoCall(message)">Tham gia
+                          </button>
+                        </div>
                       </div>
-                      {{ message.content }}
-                    </div>
-                    <div *ngIf="message.messageType === 'VIDEO'">
-                      <button class="btn btn-primary w-50" (click)="joinVideoCall(message)">Join
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -137,7 +160,7 @@
                 <form enctype="multipart/form-data">
                   <input type="file" accept="image/*" multiple class="form-control" name="file" id="file">
                 </form>
-                <button class="btn btn-primary" (click)="sendMessage()">Send</button>
+                <button class="btn btn-primary" (click)="sendMessage()">Gui</button>
               </div>
             </div>
           </div>
@@ -159,15 +182,15 @@ Modal show all member in conversation
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="w-100 modal-title" id="exampleModalLabel1">Group members</h5>
+        <h5 class="w-100 modal-title" id="exampleModalLabel1">Cac thanh vien</h5>
       </div>
       <div class="modal-body">
         <table class="table">
           <thead>
           <tr>
-            <th scope="col">Avatar</th>
-            <th scope="col">FullName</th>
-            <th *ngIf="currentConversation?.owner" scope="col">Action</th>
+            <th scope="col">Anh</th>
+            <th scope="col">Ho ten</th>
+            <th *ngIf="currentConversation?.owner" scope="col">Hanh dong</th>
           </tr>
           </thead>
           <tbody>
@@ -177,7 +200,7 @@ Modal show all member in conversation
             <td>{{user.fullName}}</td>
             <td *ngIf="currentConversation?.owner">
               <button *ngIf="user.id !== Utils.getPayload().info.id" class="btn btn-primary"
-                      (click)="deleteMember(user.id)">Delete
+                      (click)="deleteMember(user.id)">Xoa
               </button></td>
           </tr>
           </tbody>
@@ -195,15 +218,15 @@ Modal show all member in conversation
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="w-100 modal-title" id="exampleModalLabel2">Add new members</h5>
+        <h5 class="w-100 modal-title" id="exampleModalLabel2">Them thanh vien moi</h5>
       </div>
       <div class="modal-body">
         <table class="table">
           <thead>
           <tr>
-            <th scope="col">Avatar</th>
-            <th scope="col">FullName</th>
-            <th scope="col">Action</th>
+            <th scope="col">Anh</th>
+            <th scope="col">Ho ten</th>
+            <th scope="col">Hanh dong</th>
           </tr>
           </thead>
           <tbody>
@@ -211,7 +234,7 @@ Modal show all member in conversation
             <td><img src="{{user.avatar ? user.avatar : 'https://bootdey.com/img/Content/avatar/avatar5.png'}}"
                      class="rounded-circle mr-1" width="40" height="40"></td>
             <td>{{user.fullName}}</td>
-            <td *ngIf="!userInConversation(user.id)"><button class="btn btn-primary">Invite</button></td>
+            <td *ngIf="!userInConversation(user.id)"><button class="btn btn-primary" (click)="inviteUser(user)">Moi</button></td>
             <td *ngIf="userInConversation(user.id)">Da o trong nhom</td>
           </tr>
           </tbody>
@@ -227,16 +250,16 @@ Modal show all member in conversation
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="w-100 modal-title" id="exampleModalLabel3">Your groups</h5>
+        <h5 class="w-100 modal-title" id="exampleModalLabel3">Cac nhom cua ban</h5>
       </div>
       <div class="modal-body">
         <table class="table">
           <thead>
           <tr>
-            <th scope="col">Avatar</th>
-            <th scope="col">Name</th>
-            <th scope="col">Member</th>
-            <th scope="col">Action</th>
+            <th scope="col">Anh</th>
+            <th scope="col">Ten nhom</th>
+            <th scope="col">So luong thanh vien</th>
+            <th scope="col">Hanh dong</th>
           </tr>
           </thead>
           <tbody>
@@ -245,7 +268,7 @@ Modal show all member in conversation
                      class="rounded-circle mr-1" width="40" height="40"></td>
             <td *ngIf="conversation.scope === 'PUBLIC'">{{conversation.displayName}}</td>
             <td *ngIf="conversation.scope === 'PUBLIC'">{{conversation.members?.length}}</td>
-            <td *ngIf="conversation.scope === 'PUBLIC'"><button class="btn btn-primary">Invite</button></td>
+            <td *ngIf="conversation.scope === 'PUBLIC'"><button class="btn btn-primary" (click)="inviteUserIntoConversation(conversation.id)">Moi</button></td>
           </tr>
           </tbody>
         </table>
@@ -253,5 +276,37 @@ Modal show all member in conversation
     </div>
   </div>
 </div>
+
+
+
+<div class="modal fade" id="seeOtherPinMessage" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel4"
+     aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="w-100 modal-title" id="exampleModalLabel4">Tat cac ghim</h5>
+      </div>
+      <div class="modal-body">
+        <div *ngFor="let pin of currentConversation?.pinMessages"
+             class="d-flex flex-column mb-3" style="background-color: #dacece; cursor: pointer">
+          <div class="text-center">
+            <p>Nguoi ghim: <span style="color: red">{{pin?.owner}}</span></p>
+            <div>
+              {{pin?.message?.fromUser?.fullName}}:
+              {{pin?.message?.content}}
+            </div>
+          </div>
+          <div class="d-flex justify-content-center align-items-center">
+            <div class="d-flex">
+              <p style="margin-right: 10px">Thoi gian ghim: {{ this.getTime(pin?.createdDate) }}</p>
+            </div>
+          </div>
+          <button class="btn btn-primary w-100 mt-3" (click)="deletePin(pin.id)">Xoa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 

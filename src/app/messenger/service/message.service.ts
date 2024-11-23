@@ -37,4 +37,18 @@ export class MessageService {
       payload
     )
   }
+
+  pinMessage(messageId: number) {
+    return this.client.post(
+      this.URL +"/" + messageId + "/pin",
+      null,
+      {headers: Header.header()}
+    )
+  }
+  removePinMessage(pinMessageId?: number) {
+    return this.client.delete(
+      this.URL + "/pin/" + pinMessageId,
+      {headers: Header.header()}
+    )
+  }
 }

@@ -1,16 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { Utils } from "../../common/utils";
-import { UserModelView } from "../../auth/domain/user.model.view";
-import { ConversationModelView } from "../domain/conversation.model.view";
-import { MessageModeView } from "../domain/message.mode.view";
-import { MessageRequest } from "../domain/message.request";
-import { UserService } from "../../auth/service/user.service";
-import { MessageService } from "../service/message.service";
-import { ConversationService } from "../service/conversation.service";
+import {Component, OnInit} from '@angular/core';
+import {Utils} from "../../common/utils";
+import {UserModelView} from "../../auth/domain/user.model.view";
+import {ConversationModelView} from "../domain/conversation.model.view";
+import {MessageModeView} from "../domain/message.mode.view";
+import {MessageRequest} from "../domain/message.request";
+import {UserService} from "../../auth/service/user.service";
+import {MessageService} from "../service/message.service";
+import {ConversationService} from "../service/conversation.service";
 import * as Stomp from 'stompjs';
 import * as SockJS from 'sockjs-client';
-import { environment } from 'src/environments/environment.development';
-import { AuthResponse } from 'src/app/auth/domain/auth.response';
+import {environment} from 'src/environments/environment.development';
+import {AuthResponse} from 'src/app/auth/domain/auth.response';
+import {PinMessageModelView} from "../domain/pin.message.model.view";
+
 @Component({
   selector: 'app-chat-frame',
   templateUrl: './chat-frame.component.html',
@@ -58,6 +60,30 @@ export class ChatFrameComponent implements OnInit {
                   this.listConversationOfUser?.unshift(conversation)
                 }
               )
+
+              this.stompClient.subscribe(
+                "/topic/private/messages/pin/delete/conversation/user/" + Utils.getPayload().info.id,(payload: any) => {
+                  const pinMessage: PinMessageModelView = JSON.parse(payload.body);
+                  if(pinMessage.conversationId === this.currentConversation?.id) {
+                    let list = this.currentConversation?.pinMessages?.filter(pin => {
+                      return pin.id !== pinMessage.id
+                    });
+                    //@ts-ignore
+                    const ct = this.currentConversation;
+                    //@ts-ignore
+                    ct.pinMessages = new Array<PinMessageModelView>(...list)
+                    this.currentConversation = ct
+                  }
+                })
+
+              //subscribe received pin message;
+              this.stompClient.subscribe(
+                "/topic/private/messages/pin/conversation/user/" + Utils.getPayload().info.id,(payload: any) => {
+                  const pinMessage: PinMessageModelView = JSON.parse(payload.body);
+                  if(pinMessage.conversationId === this.currentConversation?.id) {
+                    this.currentConversation?.pinMessages?.push(pinMessage)
+                  }
+                })
               //subscribe received message
               this.stompClient.subscribe(
                 "/topic/private/messages/conversation/user/" + Utils.getPayload().info.id,
@@ -319,6 +345,56 @@ export class ChatFrameComponent implements OnInit {
             })
           )
           this.currentConversation = undefined;
+        }
+      })
+  }
+
+  inviteUser(user: UserModelView) {
+    this.conversationService.inviteUserToConversation(
+      this.currentConversation?.id, user.id
+    ).subscribe({
+      next: res => {
+        if(res.status === 200) {
+          this.currentConversation?.members?.push(user)
+          alert("Them thanh cong")
+        }
+      }
+    })
+  }
+
+  pinMessage(messageId: number) {
+    this.messageService.pinMessage(messageId)
+      .subscribe({
+        next: res => {
+          console.log("ok")
+        }
+      })
+  }
+
+  getLastPin(): PinMessageModelView {
+    //@ts-ignore
+    let index = this.currentConversation?.pinMessages?.length - 1;
+   //@ts-ignore
+    return this.currentConversation?.pinMessages?.at(index)
+  }
+
+  deletePin(pinId: number | undefined) {
+    this.messageService.removePinMessage(pinId)
+      .subscribe({
+        next: res => {
+          console.log("ok")
+        }
+      })
+  }
+
+  inviteUserIntoConversation(conversationId: number) {
+    const userIsChatting = this.currentConversation?.members?.filter(user => {
+      return user.id !== Utils.getPayload().info.id
+    })[0];
+    this.conversationService.inviteUserToConversation(conversationId, userIsChatting?.id)
+      .subscribe({
+        next: res => {
+          console.log("ok")
         }
       })
   }
