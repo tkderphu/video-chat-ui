@@ -2,7 +2,7 @@ name: Build Pipeline Frontend
 on:
   push:
     branches:
-      - main
+      - java-final-ui
 jobs:
   Build:
       name: Build-Image
