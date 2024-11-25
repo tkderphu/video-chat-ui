@@ -1,4 +1,4 @@
 export class LoginRequest {
-  email: string = ""
-  password: string = ""
+  email: string = "test"
+  password: string = "test"
 }
