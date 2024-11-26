@@ -9,7 +9,7 @@ import {Utils} from "../../common/utils";
 const ICE_SERVERS = {
   iceServers: [
     {
-      urls: 'turn:103.109.37.75:3478',
+      urls: 'turn:viosmash.site:3478',
       username: 'test',
       credential: 'test'
     }
